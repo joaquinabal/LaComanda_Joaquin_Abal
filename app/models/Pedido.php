@@ -24,6 +24,10 @@ class Pedido {
 
         return $objAccesoDatos->obtenerUltimoId();
     }
+
+    public function agregarProductoAPedido($producto){
+        
+    }
     
     public static function obtenerTodos()
     {
