@@ -20,6 +20,9 @@ require_once './controllers/ProductoController.php';
 require_once './controllers/MesaController.php';
 require_once './controllers/PedidoController.php';
 require_once './controllers/ItemsPedidoController.php';
+require_once './middlewares/UserParamsMW.php';
+require_once './middlewares/MozoMW.php';
+require_once './middlewares/EmpleadoMW.php';
 
 // Load ENV
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -40,7 +43,9 @@ $app->addBodyParsingMiddleware();
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
     $group->get('[/]', \UsuarioController::class . ':TraerTodos');
     $group->get('/{usuario}', \UsuarioController::class . ':TraerUno');
-    $group->post('[/]', \UsuarioController::class . ':CargarUno');
+    $group->post('[/]', \UsuarioController::class . ':CargarUno')->add(new UserParamsMiddleware);
+    $group->post('/modificar_estado_pedido', \UsuarioController::class . ':ActualizarPedido')->add(new EmpleadoMiddleware);
+    $group->post('/modificar_estado_mesa', \UsuarioController::class . ':ActualizarMesa')->add(new MozoMiddleware);  
   });
 
   $app->group('/productos', function (RouteCollectorProxy $group) {

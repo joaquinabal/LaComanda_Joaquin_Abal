@@ -10,14 +10,12 @@ class ItemsPedidoController extends ItemPedido implements IApiUsable
 
         $id_pedido = $parametros['id_pedido'];
         $id_producto = $parametros['id_producto'];
-        $cantidad = $parametros['cantidad'];
         $id_empleado = $parametros['id_empleado'];       
 
         // Creamos el usuario
         $item = new ItemPedido();
         $item->setIdPedido($id_pedido);
         $item->setIdProducto($id_producto);
-        $item->setCantidad($cantidad);
         $item->setIdEmpleado($id_empleado);
         $item->crearItemPedido();
 

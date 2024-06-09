@@ -29,6 +29,49 @@ class UsuarioController extends Empleado implements IApiUsable
           ->withHeader('Content-Type', 'application/json');
     }
 
+    public function ActualizarPedido($request, $response, $args){
+      $parametros = $request->getParsedBody();
+      $usuario = $parametros['usuario'];
+      $clave = $parametros['clave'];
+      $id_pedido = $parametros['id_pedido'];
+      Usuario::modificarEstadoPedido($id_pedido);
+
+      $payload = json_encode(array("mensaje" => "Estado modificado con exito"));
+
+      $response->getBody()->write($payload);
+      return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function ActualizarMesa($request, $response, $args){
+      $parametros = $request->getParsedBody();
+      $usuario = $parametros['usuario'];
+      $clave = $parametros['clave'];
+      $id_mesa = $parametros['id_mesa'];
+      Usuario::modificarEstadoMesa($id_mesa);
+
+      $payload = json_encode(array("mensaje" => "Estado de mesa modificado con exito"));
+
+      $response->getBody()->write($payload);
+      return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    /*public function ActualizarProducto($request, $response, $args){
+      echo "entramos \n";
+      $parametros = $request->getParsedBody();
+      $usuario = $parametros['usuario'];
+      $clave = $parametros['clave'];
+      $id_pedido = $parametros['id_pedido'];
+      Usuario::modificarEstadoPedido($id_pedido);
+
+      $payload = json_encode(array("mensaje" => "Estado modificado con exito"));
+
+      $response->getBody()->write($payload);
+      return $response
+        ->withHeader('Content-Type', 'application/json');
+    }*/
+
     public function TraerUno($request, $response, $args)
     {
         // Buscamos usuario por nombre

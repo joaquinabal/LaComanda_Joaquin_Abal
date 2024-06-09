@@ -5,18 +5,16 @@ class Producto {
     private $_tipo;
     private $_nombre;
     private $_precio;
-    private $_sector;
     private $_fechaBaja;
 
      public function crearProducto()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO productos (tipo, nombre, precio, sector) VALUES (:tipo, :nombre, :precio, :sector)");
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO productos (tipo, nombre, precio) VALUES (:tipo, :nombre, :precio)");
         $consulta->bindValue(':tipo', $this->getTipo());
         $consulta->bindValue(':nombre', $this->getNombre(), PDO::PARAM_STR);
         $consulta->bindValue(':precio', $this->getPrecio(), PDO::PARAM_STR);
         $consulta->bindValue(':precio', $this->getPrecio(), PDO::PARAM_STR);
-        $consulta->bindValue(':sector', $this->getSector(), PDO::PARAM_STR);
         $consulta->execute();
 
         return $objAccesoDatos->obtenerUltimoId();
@@ -25,7 +23,7 @@ class Producto {
    public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, tipo, nombre, precio, sector FROM productos");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, tipo, nombre, precio FROM productos");
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Producto');
@@ -34,7 +32,7 @@ class Producto {
     public static function obtenerProducto($nombreProducto)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, tipo, nombre, precio, sector FROM productos WHERE nombre = :nombre");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, tipo, nombre, precio FROM productos WHERE nombre = :nombre");
         $consulta->bindValue(':nombre', $nombreProducto, PDO::PARAM_STR);
         $consulta->execute();
 
@@ -44,12 +42,11 @@ class Producto {
     public function modificarProducto($id)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDato->prepararConsulta("UPDATE productos SET tipo = :tipo, nombre = :nombre, precio = :precio, sector = :sector WHERE id = :id");
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE productos SET tipo = :tipo, nombre = :nombre, precio = :precio WHERE id = :id");
         $consulta->bindValue(':id', $id);
         $consulta->bindValue(':tipo', $this->getTipo());
         $consulta->bindValue(':nombre', $this->getNombre(), PDO::PARAM_STR);
         $consulta->bindValue(':precio', $this->getPrecio(), PDO::PARAM_STR);
-        $consulta->bindValue(':sector', $this->getSector(), PDO::PARAM_STR);
         $consulta->execute();
     }
 
@@ -80,9 +77,6 @@ class Producto {
         return $this->_precio;
     }
 
-    public function getSector(){
-        return $this->_sector;
-    }
 
     // Métodos Setters
     public function setId($id) {
@@ -101,7 +95,4 @@ class Producto {
         $this->_precio = $precio;
     }
 
-    public function setSector($sector){
-        $this->_sector = $sector;
-    }
 }
