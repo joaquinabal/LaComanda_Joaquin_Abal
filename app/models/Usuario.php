@@ -76,13 +76,34 @@ class Usuario
                 case $estados[1]:
                     $nuevoEstado = $estados[2];
                     break;
-                case $estados[2]:
-                    $nuevoEstado = $estados[3]; //ver
-                    break;
                 default:
                     throw new Exception('Estado desconocido: ' . $estadoActual);
             }
     
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE mesas SET estado = :estado WHERE id = :id");
+        $consulta->bindValue(':estado', $nuevoEstado, PDO::PARAM_STR);
+        $consulta->bindValue(':id', $id);
+        $consulta->execute();
+        }
+    }
+
+    public static function cerrarEstadoMesa($id)
+    {
+        $estados = ["con cliente esperando pedido", "con cliente comiendo", "con cliente pagando", "cerrada"];
+        
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT estado FROM mesas WHERE id = :id");
+        $consulta->bindValue(':id', $id, PDO::PARAM_INT);
+        $consulta->execute();
+        $resultado = $consulta->fetch(PDO::FETCH_ASSOC);
+
+        if ($resultado) {
+            $estadoActual = $resultado['estado'];
+            $nuevoEstado = '';
+
+            if($estadoActual == $estados[2]){
+                $nuevoEstado = $estados[3];
+            }
         $consulta = $objAccesoDatos->prepararConsulta("UPDATE mesas SET estado = :estado WHERE id = :id");
         $consulta->bindValue(':estado', $nuevoEstado, PDO::PARAM_STR);
         $consulta->bindValue(':id', $id);

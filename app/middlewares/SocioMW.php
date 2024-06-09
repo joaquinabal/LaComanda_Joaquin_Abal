@@ -8,20 +8,20 @@ require_once "./models/Usuario.php";
 require_once "./models/Producto.php";
 require_once "./models/Pedido.php";
 require_once "./models/ItemsPedido.php";
-class EmpleadoMiddleware
+class SocioMiddleware
 {
 
     public function __invoke(Request $request, RequestHandler $handler)
     {
 
-        echo "Empleado MW \n";
+        echo "Socio MW \n";
 
         $params = $request->getParsedBody();
-        if (ItemPedido::obtenerItemPedido($params["id_pedido"], Usuario::obtenerUsuario($params["usuario"])->id)) {
+        if (Usuario::obtenerUsuario($params["usuario"])->rol_empleado == "mozo") {
             $response = $handler->handle($request);
         } else {
             $response = new Response();
-            $response->getBody()->write(json_encode(array("error" => "El usuario no posee rol correspondiente.")));
+            $response->getBody()->write(json_encode(array("error" => "El usuario no posee el rol de socio.")));
         }
         return $response;
     }

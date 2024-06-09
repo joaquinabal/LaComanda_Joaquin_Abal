@@ -57,6 +57,20 @@ class UsuarioController extends Empleado implements IApiUsable
         ->withHeader('Content-Type', 'application/json');
     }
 
+    public function CerrarMesa($request, $response, $args){
+      $parametros = $request->getParsedBody();
+      $usuario = $parametros['usuario'];
+      $clave = $parametros['clave'];
+      $id_mesa = $parametros['id_mesa'];
+      Usuario::cerrarEstadoMesa($id_mesa);
+
+      $payload = json_encode(array("mensaje" => "Estado de mesa modificado con exito"));
+
+      $response->getBody()->write($payload);
+      return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
     /*public function ActualizarProducto($request, $response, $args){
       echo "entramos \n";
       $parametros = $request->getParsedBody();

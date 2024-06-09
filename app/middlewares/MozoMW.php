@@ -13,23 +13,13 @@ class MozoMiddleware
     {
 
         echo "Mozo MW \n";
+        $params = $request->getQueryParams();
 
-        $params = $request->getParsedBody();
-        if (isset($params["usuario"], $params["clave"], $params["id_pedido"]) || (isset($params["usuario"], $params["clave"], $params["id_mesa"]))) {
-            if (Usuario::obtenerUsuario($params["usuario"])) {
-                if (Usuario::obtenerUsuario($params["usuario"])->rol_empleado == "mozo") {
-                    $response = $handler->handle($request);
-                } else {
-                    $response = new Response();
-                    $response->getBody()->write(json_encode(array("error" => "El usuario no posee rol de Mozo.")));
-                }
-            } else {
-                $response = new Response();
-                $response->getBody()->write(json_encode(array("error" => "El usuario no existe.")));
-            }
+        if (Usuario::obtenerUsuario($params["usuario"])->rol_empleado == "mozo") {
+            $response = $handler->handle($request);
         } else {
             $response = new Response();
-            $response->getBody()->write(json_encode(array("error" => "parámetros inexistentes.")));
+            $response->getBody()->write(json_encode(array("error" => "El usuario no posee rol de Mozo.")));
         }
         return $response;
     }
