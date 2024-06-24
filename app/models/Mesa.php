@@ -1,20 +1,16 @@
 <?php
 
 class Mesa {
-    private $_id;
-    private $_codigo;
-    private $_estado;
-    private $_total_pedido; 
-
-    //se le agrega n° de mesa manual?
+    public $id;
+    public $codigo;
+    public $estado;
 
     public function crearMesa()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO Mesas (codigo, estado, total_pedido) VALUES (:codigo, :estado, :total_pedido)");
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO Mesas (codigo, estado) VALUES (:codigo, :estado)");
         $consulta->bindValue(':codigo', $this->generarCodigo());
         $consulta->bindValue(':estado', 'con cliente esperando pedido');
-        $consulta->bindValue(':total_pedido', 0);
         $consulta->execute();
 
         return $objAccesoDatos->obtenerUltimoId();
@@ -23,7 +19,7 @@ class Mesa {
     public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, estado, total_pedido FROM mesas");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, estado FROM mesas");
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Mesa');
@@ -32,7 +28,7 @@ class Mesa {
     public static function obtenerMesa($id)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, estado, total_pedido FROM mesas WHERE id = :id");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, estado FROM mesas WHERE id = :id");
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
 
@@ -61,17 +57,13 @@ class Mesa {
         $consulta->execute();
     }*/
 
-    static private function generarCodigo(){
-        return rand(11111,99999);
+    function generarCodigo($longitud = 5) {
+        $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $codigo = '';
+        for ($i = 0; $i < $longitud; $i++) {
+            $indiceAleatorio = random_int(0, strlen($caracteres) - 1);
+            $codigo .= $caracteres[$indiceAleatorio];
+        }
+        return $codigo;
     }
-
-    public function actualizarTotalPedido($nuevoTotal) {
-        $this->_total_pedido = $nuevoTotal;
-    }
-
-    public function getTotalPedido() {
-        return $this->_total_pedido;
-    }
-
-    // Otros métodos...
 }

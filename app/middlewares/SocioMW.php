@@ -17,7 +17,7 @@ class SocioMiddleware
         echo "Socio MW \n";
 
         $params = $request->getParsedBody();
-        if (Usuario::obtenerUsuario($params["usuario"])->rol_empleado == "mozo") {
+        if (Usuario::obtenerUsuario($params["usuario"])->rol_empleado == "socio") {
             $response = $handler->handle($request);
         } else {
             $response = new Response();

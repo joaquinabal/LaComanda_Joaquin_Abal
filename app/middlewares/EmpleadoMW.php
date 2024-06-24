@@ -8,6 +8,7 @@ require_once "./models/Usuario.php";
 require_once "./models/Producto.php";
 require_once "./models/Pedido.php";
 require_once "./models/ItemsPedido.php";
+require_once "./utils/AutentificadorJWT.php";
 class EmpleadoMiddleware
 {
 
@@ -16,8 +17,14 @@ class EmpleadoMiddleware
 
         echo "Empleado MW \n";
 
+        $header = $request->getHeaderLine('Authorization');
+        $token = trim(explode("Bearer", $header)[1]);
+        $data = AutentificadorJWT::ObtenerData($token);
+
         $params = $request->getParsedBody();
-        if (ItemPedido::obtenerItemPedido($params["id_pedido"], Usuario::obtenerUsuario($params["usuario"])->id)) {
+        
+        if (ItemPedido::obtenerItemPedidoSegunPedidoYEmpleado(ItemPedido::obtenerItemPedido($params['id_item'])->id_pedido, $data->id)) {
+            
             $response = $handler->handle($request);
         } else {
             $response = new Response();

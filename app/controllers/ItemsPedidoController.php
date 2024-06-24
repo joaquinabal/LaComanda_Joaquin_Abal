@@ -9,15 +9,15 @@ class ItemsPedidoController extends ItemPedido implements IApiUsable
         $parametros = $request->getParsedBody();
 
         $id_pedido = $parametros['id_pedido'];
-        $id_producto = $parametros['id_producto'];
-        $id_empleado = $parametros['id_empleado'];       
+        $id_producto = $parametros['id_producto'];   
 
         // Creamos el usuario
         $item = new ItemPedido();
         $item->setIdPedido($id_pedido);
         $item->setIdProducto($id_producto);
-        $item->setIdEmpleado($id_empleado);
+        $item->setEstado("pendiente");
         $item->crearItemPedido();
+        
 
         $payload = json_encode(array("mensaje" => "ItemPedido creado con exito"));
 
@@ -30,7 +30,7 @@ class ItemsPedidoController extends ItemPedido implements IApiUsable
     {
         // Buscamos Itempedido por id
         $prod = $args['itemPedido'];
-        $producto = ItemPedido::obtenerPedido($prod);
+        $producto = ItemPedido::obtenerItemPedido($prod);
         $payload = json_encode($producto);
 
         $response->getBody()->write($payload);

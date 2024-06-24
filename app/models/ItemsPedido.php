@@ -2,18 +2,21 @@
 
 class ItemPedido{
 
-    private $_id;
-    private $_id_pedido;
-    private $_id_producto;
-    private $_id_empleado;
+    public $id;
+    public $id_pedido;
+    public $id_producto;
+    public $id_empleado;
+    
+    public $estado;
 
     public function crearItemPedido()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO itemspedido (id_pedido, id_producto, id_empleado) VALUES (:id_pedido, :id_producto, :id_empleado)");
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO itemspedido (id_pedido, id_producto, estado) VALUES (:id_pedido, :id_producto, :estado)");
         $consulta->bindValue(':id_pedido', $this->getIdPedido());
         $consulta->bindValue(':id_producto', $this->getIdProducto());
-        $consulta->bindValue(':id_empleado', $this->getIdEmpleado());
+       // $consulta->bindValue(':id_empleado', $this->getIdEmpleado());
+        $consulta->bindValue(':estado', 'pendiente');
         $consulta->execute();
 
         return $objAccesoDatos->obtenerUltimoId();
@@ -28,10 +31,10 @@ class ItemPedido{
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'ItemPedido');
     }
 
-    public static function obtenerItemPedido($id_pedido, $id_empleado)
+    public static function obtenerItemPedidoSegunPedidoYEmpleado($id_pedido, $id_empleado)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, id_pedido, id_producto, id_empleado FROM itemspedido WHERE id_pedido = :id_pedido AND id_empleado = :id_empleado");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, id_pedido, id_producto, id_empleado, estado FROM itemspedido WHERE id_pedido = :id_pedido AND id_empleado = :id_empleado");
         $consulta->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
         $consulta->bindValue(':id_empleado', $id_empleado, PDO::PARAM_INT);
         $consulta->execute();
@@ -39,48 +42,76 @@ class ItemPedido{
         return $consulta->fetchObject('ItemPedido');
     }
 
+    public static function obtenerItemPedido($id)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, id_pedido, id_producto, id_empleado, estado FROM itemspedido WHERE id = :id");
+        $consulta->bindValue(':id', $id, PDO::PARAM_INT);
+        $consulta->execute();
+
+        return $consulta->fetchObject('ItemPedido');
+    }
 
 
+    public static function actualizarTiempoEstimadoPedido($id_producto){
+        
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE pedidos p JOIN itemspedido a on p.id = a.id_pedido LEFT JOIN productos b on b.id = a.id_producto SET tiempo_estimado = b.tiempo WHERE b.id = :id");
+        $consulta->bindValue(':id', $id_producto, PDO::PARAM_INT);
+        $consulta->execute();
 
-// Getter para _id
+    }
+
+    public static function asignarEmpleado($id_item, $id_empleado){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE itemspedido SET id_empleado = :id_empleado WHERE id = :id");
+        $consulta->bindValue(':id', $id_item, PDO::PARAM_INT);
+        $consulta->bindValue(':id_empleado', $id_empleado, PDO::PARAM_INT);
+        $consulta->execute();
+
+    }
+    
+
+
 public function getId() {
-    return $this->_id;
+    return $this->id;
 }
 
-// Setter para _id
 public function setId($id) {
-    $this->_id = $id;
+    $this->id = $id;
 }
 
-// Getter para _id_pedido
 public function getIdPedido() {
-    return $this->_id_pedido;
+    return $this->id_pedido;
 }
 
-// Setter para _id_pedido
 public function setIdPedido($id_pedido) {
-    $this->_id_pedido = $id_pedido;
+    $this->id_pedido = $id_pedido;
 }
 
-// Getter para _id_producto
 public function getIdProducto() {
-    return $this->_id_producto;
+    return $this->id_producto;
 }
 
-// Setter para _id_producto
 public function setIdProducto($id_producto) {
-    $this->_id_producto = $id_producto;
+    $this->id_producto = $id_producto;
 }
 
 
-// Getter para _id_empleado
 public function getIdEmpleado() {
-    return $this->_id_empleado;
+    return $this->id_empleado;
 }
 
-// Setter para _id_empleado
 public function setIdEmpleado($id_empleado) {
-    $this->_id_empleado = $id_empleado;
+    $this->id_empleado = $id_empleado;
+}
+
+public function getEstado() {
+    return $this->estado;
+}
+
+public function setEstado($estado) {
+    $this->estado = $estado;
 }
 
 }

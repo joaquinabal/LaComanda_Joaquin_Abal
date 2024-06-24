@@ -1,20 +1,22 @@
 <?php
 
 class Producto {
-    private $_id;
-    private $_tipo;
-    private $_nombre;
-    private $_precio;
-    private $_fechaBaja;
+    public $id;
+    public $tipo;
+    public $nombre;
+    public $precio;
+
+    public $tiempo;
+    public $fechaBaja;
 
      public function crearProducto()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO productos (tipo, nombre, precio) VALUES (:tipo, :nombre, :precio)");
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO productos (tipo, nombre, precio, tiempo) VALUES (:tipo, :nombre, :precio, :tiempo)");
         $consulta->bindValue(':tipo', $this->getTipo());
         $consulta->bindValue(':nombre', $this->getNombre(), PDO::PARAM_STR);
         $consulta->bindValue(':precio', $this->getPrecio(), PDO::PARAM_STR);
-        $consulta->bindValue(':precio', $this->getPrecio(), PDO::PARAM_STR);
+        $consulta->bindValue(':tiempo', $this->getTiempo(), PDO::PARAM_STR);
         $consulta->execute();
 
         return $objAccesoDatos->obtenerUltimoId();
@@ -23,10 +25,10 @@ class Producto {
    public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, tipo, nombre, precio FROM productos");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, tipo, nombre, precio, tiempo FROM productos");
         $consulta->execute();
 
-        return $consulta->fetchAll(PDO::FETCH_CLASS, 'Producto');
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public static function obtenerProducto($nombreProducto)
@@ -34,6 +36,16 @@ class Producto {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
         $consulta = $objAccesoDatos->prepararConsulta("SELECT id, tipo, nombre, precio FROM productos WHERE nombre = :nombre");
         $consulta->bindValue(':nombre', $nombreProducto, PDO::PARAM_STR);
+        $consulta->execute();
+
+        return $consulta->fetchObject('Producto');
+    }
+
+    public static function obtenerProductoSegunId($id)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, tipo, nombre, precio FROM productos WHERE id = :id");
+        $consulta->bindValue(':id', $id, PDO::PARAM_STR);
         $consulta->execute();
 
         return $consulta->fetchObject('Producto');
@@ -50,6 +62,20 @@ class Producto {
         $consulta->execute();
     }
 
+
+    
+    public  function modificarPrecioTiempoSegunNombre()
+    {
+        $objAccesoDato = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE productos SET precio = :precio, tiempo = :tiempo WHERE nombre = :nombre");
+        $consulta->bindValue(':nombre', $this->getNombre(), PDO::PARAM_STR);
+        $consulta->bindValue(':precio', $this->getPrecio(), PDO::PARAM_STR);
+        $consulta->bindValue(':tiempo', $this->getTiempo(), PDO::PARAM_STR);
+        $consulta->execute();
+    }
+
+    
+
     public static function borrarProducto($id)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
@@ -62,37 +88,44 @@ class Producto {
 
     // Métodos Getters
     public function getId() {
-        return $this->_id;
+        return $this->id;
     }
 
     public function getTipo() {
-        return $this->_tipo;
+        return $this->tipo;
     }
 
     public function getNombre() {
-        return $this->_nombre;
+        return $this->nombre;
     }
 
     public function getPrecio() {
-        return $this->_precio;
+        return $this->precio;
+    }
+
+    public function getTiempo() {
+        return $this->tiempo;
     }
 
 
     // Métodos Setters
     public function setId($id) {
-        $this->_id = $id;
+        $this->id = $id;
     }
 
     public function setTipo($tipo) {
-        $this->_tipo = $tipo;
+        $this->tipo = $tipo;
     }
 
     public function setNombre($nombre) {
-        $this->_nombre = $nombre;
+        $this->nombre = $nombre;
     }
 
     public function setPrecio($precio) {
-        $this->_precio = $precio;
+        $this->precio = $precio;
     }
 
+    public function setTiempo($tiempo){
+    $this->tiempo = $tiempo;
+}
 }

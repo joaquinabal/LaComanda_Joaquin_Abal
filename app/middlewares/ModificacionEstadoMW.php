@@ -13,10 +13,13 @@ class ModificacionEstadoMiddleware
     {
 
         echo "Mod Estado Mesa/Pedido MW \n";
+        $header = $request->getHeaderLine('Authorization');
+        $token = trim(explode("Bearer", $header)[1]);
+        $data = AutentificadorJWT::ObtenerData($token);
 
         $params = $request->getParsedBody();
-        if (isset($params["usuario"], $params["clave"], $params["id_pedido"]) || (isset($params["usuario"], $params["clave"], $params["id_mesa"]))) {
-            if (Usuario::obtenerUsuario($params["usuario"])) {
+        if (isset($data->usuario, $params["id_item"]) || (isset($params["usuario"], $params["id_mesa"]))) {
+            if (Usuario::obtenerUsuario($data->usuario)) {
                 $response = $handler->handle($request);
             } else {
                 $response = new Response();

@@ -1,0 +1,10 @@
+id,tipo,nombre,precio,tiempo
+1,PlatoPrincipal,"Pollo con Papas",6500.00,30
+2,Cerveza,"Imperial IPA",3500.00,5
+3,Postre,TIramisú,3500.00,15
+4,TragoVino,"Gancia Batido",4000.00,8
+13,PlatoPrincipal,"Fideos con Tuco",1000.00,20
+14,Cerveza,APA,2000.00,5
+15,TragoVino,"DADA Malbec",2700.00,5
+16,TragoVino,Negroni,4000.00,10
+17,Postre,"Frutillas con Crema",2500.00,10

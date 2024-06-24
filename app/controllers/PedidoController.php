@@ -1,6 +1,7 @@
 <?php
 require_once './models/Pedido.php';
 require_once './interfaces/IApiUsable.php';
+require_once './utils/Archivos.php';
 
 class PedidoController extends Pedido implements IApiUsable
 {
@@ -9,10 +10,11 @@ class PedidoController extends Pedido implements IApiUsable
         $parametros = $request->getParsedBody();
 
         $id_mesa = $parametros['id_mesa'];       
+        $nombre_cliente = $parametros['nombre_cliente'];
 
-        // Creamos el usuario
         $pedido = new Pedido();
         $pedido->setId_Mesa($id_mesa);
+        $pedido->setNombreCliente($nombre_cliente);
         $pedido->crearPedido();
 
         $payload = json_encode(array("mensaje" => "Pedido creado con exito"));
@@ -43,7 +45,27 @@ class PedidoController extends Pedido implements IApiUsable
         return $response
           ->withHeader('Content-Type', 'application/json');
     }
-    
+
+    public function TraerItemsPedido($request, $response, $args)
+    {
+        $id_pedido = $args['pedido'];
+        $items_pedido = Pedido::obtenerItemsPedidoSegunPedido($id_pedido);
+        $payload = json_encode($items_pedido);
+
+        $response->getBody()->write($payload);
+        return $response
+          ->withHeader('Content-Type', 'application/json');
+    }
+  
+    public function ListarTotalEnPreparacion($request, $response){
+      $en_preparacion = Pedido::obtenerPedidosEnPreparacion();
+      $payload = json_encode($en_preparacion);
+
+        $response->getBody()->write($payload);
+        return $response
+          ->withHeader('Content-Type', 'application/json');
+    }
+
     public function ModificarUno($request, $response, $args)
     {
        /* $parametros = $request->getParsedBody();

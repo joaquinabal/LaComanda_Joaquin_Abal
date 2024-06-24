@@ -13,9 +13,11 @@ class MozoMiddleware
     {
 
         echo "Mozo MW \n";
-        $params = $request->getQueryParams();
 
-        if (Usuario::obtenerUsuario($params["usuario"])->rol_empleado == "mozo") {
+        
+        $data = AutentificadorJWT::DevolverDataSegunHeader($request);
+
+        if (in_array($data->rol_empleado, ["mozo", "socio"])) {
             $response = $handler->handle($request);
         } else {
             $response = new Response();

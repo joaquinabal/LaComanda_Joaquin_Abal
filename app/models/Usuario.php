@@ -1,20 +1,20 @@
 <?php
-
+date_default_timezone_set('America/Argentina/Buenos_Aires');
 require_once "Empleado.php";
 
 class Usuario
 {
-    protected $_id;
-    protected $_usuario;
-    protected $_clave;
+    public $id;
+    public $usuario;
+    public $contraseña;
 
     public function crearUsuario()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (usuario, clave) VALUES (:usuario, :clave)");
-        $claveHash = password_hash($this->getClave(), PASSWORD_DEFAULT);
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (usuario, contraseña) VALUES (:usuario, :contraseña)");
+        $claveHash = password_hash($this->getContraseña(), PASSWORD_DEFAULT);
         $consulta->bindValue(':usuario', $this->getUsuario(), PDO::PARAM_STR);
-        $consulta->bindValue(':clave', $claveHash);
+        $consulta->bindValue(':contraseña', $claveHash);
         $consulta->execute();
 
         return $objAccesoDatos->obtenerUltimoId();
@@ -25,7 +25,7 @@ class Usuario
         $estados = ["pendiente", "en preparación", "listo para servir", "servido"];
         
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT estado FROM pedidos WHERE id = :id");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT estado FROM itemspedido WHERE id = :id");
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
         $resultado = $consulta->fetch(PDO::FETCH_ASSOC);
@@ -48,7 +48,7 @@ class Usuario
                     throw new Exception('Estado desconocido: ' . $estadoActual);
             }
     
-        $consulta = $objAccesoDatos->prepararConsulta("UPDATE pedidos SET estado = :estado WHERE id = :id");
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE itemspedido SET estado = :estado WHERE id = :id");
         $consulta->bindValue(':estado', $nuevoEstado, PDO::PARAM_STR);
         $consulta->bindValue(':id', $id);
         $consulta->execute();
@@ -87,6 +87,18 @@ class Usuario
         }
     }
 
+    public static function modificarEstadoTodasMesasAListoParaServir()
+    {
+        $estados_itemspedido = ["pendiente", "en preparación", "listo para servir", "servido"];
+        $estados_mesa = ["con cliente esperando pedido", "con cliente comiendo", "con cliente pagando", "cerrada"];   
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE mesas m JOIN  (SELECT a.id_mesa FROM pedidos a JOIN itemspedido b ON b.id_pedido = a.id GROUP BY a.id_mesa HAVING COUNT(b.id) = SUM(CASE WHEN b.estado = :estado_itemspedido THEN 1 ELSE 0 END)) sub ON  m.id = sub.id_mesa SET m.estado = :estado_mesa");
+        $consulta->bindValue(':estado_itemspedido',$estados_itemspedido[2], PDO::PARAM_STR);
+        $consulta->bindValue(':estado_mesa',$estados_mesa[1], PDO::PARAM_STR);
+        $consulta->execute();
+    }
+    
+
     public static function cerrarEstadoMesa($id)
     {
         $estados = ["con cliente esperando pedido", "con cliente comiendo", "con cliente pagando", "cerrada"];
@@ -111,6 +123,27 @@ class Usuario
         }
     }
 
+    public static function obtenerPendientesSegunTipoEmpleado($rol_empleado)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT c.id AS ID_Item, c.nombre AS Item, p.codigo AS Codigo_Pedido,  p.nombre_cliente AS Nombre_Cliente, 'pendiente' AS Estado FROM productos c JOIN pedidos p ON p.id = ( SELECT id_pedido FROM itemspedido ip_inner WHERE ip_inner.id_producto = c.id AND ip_inner.estado = 'pendiente' LIMIT 1 ) LEFT JOIN rol_empleado_tipo_producto r ON c.tipo = r.tipo WHERE EXISTS ( SELECT 1 FROM itemspedido ip WHERE ip.id_producto = c.id AND ip.estado = 'pendiente' AND ip.id_empleado IS NULL ) AND r.rol_empleado = :rol_empleado");
+        $consulta->bindValue(':rol_empleado', $rol_empleado);
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    
+    public function obtenerEnPreparacionDeEmpleado()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT a.nombre as Empleado, a.rol_empleado as Rol, c.id as ID_Item, c.nombre as Item, b.estado as Estado FROM usuarios a JOIN itemspedido b on b.id_empleado = a.id JOIN productos c on c.id = b.id_producto WHERE b.estado = 'en preparación' AND a.id = :id");
+        $consulta->bindValue(':id', $this->getId());
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
@@ -123,7 +156,7 @@ class Usuario
     public static function obtenerUsuario($usuario)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, username, nombre, rol_empleado, fecha_ingreso, fecha_baja  FROM usuarios WHERE username = :usuario");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, username, contraseña, nombre, rol_empleado, fecha_ingreso, fecha_baja  FROM usuarios WHERE username = :usuario");
         $consulta->bindValue(':usuario', $usuario, PDO::PARAM_STR);
         $consulta->execute();
 
@@ -133,9 +166,9 @@ class Usuario
     public function modificarUsuario()
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET username = :username, password = :password WHERE id = :id");
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET username = :username, contraseña = :contraseña WHERE id = :id");
         $consulta->bindValue(':username', $this->getUsuario(), PDO::PARAM_STR);
-        $consulta->bindValue(':password', $this->getClave(), PDO::PARAM_STR);
+        $consulta->bindValue(':contraseña', $this->getContraseña(), PDO::PARAM_STR);
         $consulta->execute();
     }
 
@@ -149,39 +182,51 @@ class Usuario
         $consulta->execute();
     }
 
+    public function guardarFechaIngreso()
+    {
+        $objAccesoDato = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDato->prepararConsulta("INSERT INTO fecha_ingreso (id_usuario, fecha_hora) VALUES (:id_usuario, :fecha_hora)");
+        $fecha = new DateTime(date('Y-m-d H:i:s'));
+        $consulta->bindValue(':id_usuario', $this->id, PDO::PARAM_INT);
+        $consulta->bindValue(':fecha_hora', date_format($fecha, 'Y-m-d H:i:s'));
+        $consulta->execute();
+    }
+
+
+
     // Getter for _id
     public function getId()
     {
-        return $this->_id;
+        return $this->id;
     }
 
     // Setter for _id
     public function setId($id)
     {
-        $this->_id = $id;
+        $this->id = $id;
     }
 
     // Getter for _usuario
     public function getUsuario()
     {
-        return $this->_usuario;
+        return $this->usuario;
     }
 
     // Setter for _usuario
     public function setUsuario($usuario)
     {
-        $this->_usuario = $usuario;
+        $this->usuario = $usuario;
     }
 
-    // Getter for _clave
-    public function getClave()
+    // Getter for _contraseña
+    public function getContraseña()
     {
-        return $this->_clave;
+        return $this->contraseña;
     }
 
-    // Setter for _clave
-    public function setClave($clave)
+    // Setter for _contraseña
+    public function setContraseña($contraseña)
     {
-        $this->_clave = $clave;
+        $this->contraseña = $contraseña;
     }
 }
