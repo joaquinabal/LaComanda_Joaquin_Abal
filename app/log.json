@@ -1,0 +1,290 @@
+[
+    {
+        "fecha": "2024-06-30 17:11:00",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/login",
+        "id_usuario": 3,
+        "usuario": "joajoajoa",
+        "nombre": "Joaquin",
+        "rol_empleado": "mozo"
+    },
+    {
+        "fecha": "2024-06-30 17:11:56",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/productos\/",
+        "id_usuario": 9,
+        "usuario": "admin2",
+        "nombre": "Sabri",
+        "rol_empleado": "socio"
+    },
+    {
+        "fecha": "2024-06-30 17:17:58",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/pedidos",
+        "id_usuario": 1,
+        "usuario": "barriabal",
+        "nombre": "Joaquin",
+        "rol_empleado": "mozo"
+    },
+    {
+        "fecha": "2024-06-30 17:18:36",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/itemspedidos\/",
+        "id_usuario": 1,
+        "usuario": "barriabal",
+        "nombre": "Joaquin",
+        "rol_empleado": "mozo"
+    },
+    {
+        "fecha": "2024-06-30 17:18:49",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/itemspedidos\/",
+        "id_usuario": 1,
+        "usuario": "barriabal",
+        "nombre": "Joaquin",
+        "rol_empleado": "mozo"
+    },
+    {
+        "fecha": "2024-06-30 17:19:07",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/itemspedidos\/",
+        "id_usuario": 1,
+        "usuario": "barriabal",
+        "nombre": "Joaquin",
+        "rol_empleado": "mozo"
+    },
+    {
+        "fecha": "2024-06-30 17:19:35",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/itemspedidos\/",
+        "id_usuario": 1,
+        "usuario": "barriabal",
+        "nombre": "Joaquin",
+        "rol_empleado": "mozo"
+    },
+    {
+        "fecha": "2024-06-30 17:20:12",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/itemspedidos\/",
+        "id_usuario": 1,
+        "usuario": "barriabal",
+        "nombre": "Joaquin",
+        "rol_empleado": "mozo"
+    },
+    {
+        "fecha": "2024-06-30 17:20:37",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/pendientes",
+        "id_usuario": 11,
+        "usuario": "sab",
+        "nombre": "Sabrina",
+        "rol_empleado": "cocinero"
+    },
+    {
+        "fecha": "2024-06-30 17:20:43",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/pendientes",
+        "id_usuario": 7,
+        "usuario": "juancito",
+        "nombre": "Juan",
+        "rol_empleado": "cervecero"
+    },
+    {
+        "fecha": "2024-06-30 17:21:08",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/pendientes",
+        "id_usuario": 7,
+        "usuario": "juancito",
+        "nombre": "Juan",
+        "rol_empleado": "cervecero"
+    },
+    {
+        "fecha": "2024-06-30 17:21:28",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/itemspedidos\/",
+        "id_usuario": 1,
+        "usuario": "barriabal",
+        "nombre": "Joaquin",
+        "rol_empleado": "mozo"
+    },
+    {
+        "fecha": "2024-06-30 17:23:40",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/pendientes",
+        "id_usuario": 11,
+        "usuario": "sab",
+        "nombre": "Sabrina",
+        "rol_empleado": "cocinero"
+    },
+    {
+        "fecha": "2024-06-30 17:23:52",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/pendientes",
+        "id_usuario": 7,
+        "usuario": "juancito",
+        "nombre": "Juan",
+        "rol_empleado": "cervecero"
+    },
+    {
+        "fecha": "2024-06-30 17:23:56",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/pendientes",
+        "id_usuario": 6,
+        "usuario": "quiquique",
+        "nombre": "Enrique",
+        "rol_empleado": "bartender"
+    },
+    {
+        "fecha": "2024-06-30 17:24:21",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/asignar_item",
+        "id_usuario": 11,
+        "usuario": "sab",
+        "nombre": "Sabrina",
+        "rol_empleado": "cocinero"
+    },
+    {
+        "fecha": "2024-06-30 17:25:40",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/asignar_item",
+        "id_usuario": 11,
+        "usuario": "sab",
+        "nombre": "Sabrina",
+        "rol_empleado": "cocinero"
+    },
+    {
+        "fecha": "2024-06-30 17:25:56",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/asignar_item",
+        "id_usuario": 11,
+        "usuario": "sab",
+        "nombre": "Sabrina",
+        "rol_empleado": "cocinero"
+    },
+    {
+        "fecha": "2024-06-30 17:26:05",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/asignar_item",
+        "id_usuario": 7,
+        "usuario": "juancito",
+        "nombre": "Juan",
+        "rol_empleado": "cervecero"
+    },
+    {
+        "fecha": "2024-06-30 17:26:17",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/asignar_item",
+        "id_usuario": 6,
+        "usuario": "quiquique",
+        "nombre": "Enrique",
+        "rol_empleado": "bartender"
+    },
+    {
+        "fecha": "2024-06-30 17:32:46",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/pedidos\/en_preparacion",
+        "id_usuario": 9,
+        "usuario": "admin2",
+        "nombre": "Sabri",
+        "rol_empleado": "socio"
+    },
+    {
+        "fecha": "2024-06-30 17:32:55",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/en_preparacion",
+        "id_usuario": 11,
+        "usuario": "sab",
+        "nombre": "Sabrina",
+        "rol_empleado": "cocinero"
+    },
+    {
+        "fecha": "2024-06-30 17:33:02",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/en_preparacion",
+        "id_usuario": 6,
+        "usuario": "quiquique",
+        "nombre": "Enrique",
+        "rol_empleado": "bartender"
+    },
+    {
+        "fecha": "2024-06-30 17:33:08",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/en_preparacion",
+        "id_usuario": 7,
+        "usuario": "juancito",
+        "nombre": "Juan",
+        "rol_empleado": "cervecero"
+    },
+    {
+        "fecha": "2024-06-30 17:33:58",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/modificar_estado_pedido",
+        "id_usuario": 11,
+        "usuario": "sab",
+        "nombre": "Sabrina",
+        "rol_empleado": "cocinero"
+    },
+    {
+        "fecha": "2024-06-30 17:34:09",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/modificar_estado_pedido",
+        "id_usuario": 11,
+        "usuario": "sab",
+        "nombre": "Sabrina",
+        "rol_empleado": "cocinero"
+    },
+    {
+        "fecha": "2024-06-30 17:36:41",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/modificar_estado_pedido",
+        "id_usuario": 11,
+        "usuario": "sab",
+        "nombre": "Sabrina",
+        "rol_empleado": "cocinero"
+    },
+    {
+        "fecha": "2024-06-30 17:37:03",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/modificar_estado_pedido",
+        "id_usuario": 7,
+        "usuario": "juancito",
+        "nombre": "Juan",
+        "rol_empleado": "cervecero"
+    },
+    {
+        "fecha": "2024-06-30 17:37:16",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/modificar_estado_pedido",
+        "id_usuario": 6,
+        "usuario": "quiquique",
+        "nombre": "Enrique",
+        "rol_empleado": "bartender"
+    },
+    {
+        "fecha": "2024-06-30 17:38:10",
+        "method": "PUT",
+        "accion": "\/2024C1\/TP\/app\/mesas\/listos_para_servir",
+        "id_usuario": 1,
+        "usuario": "barriabal",
+        "nombre": "Joaquin",
+        "rol_empleado": "mozo"
+    },
+    {
+        "fecha": "2024-06-30 17:39:12",
+        "method": "GET",
+        "accion": "\/2024C1\/TP\/app\/mesas\/mostrar\/todas",
+        "id_usuario": 9,
+        "usuario": "admin2",
+        "nombre": "Sabri",
+        "rol_empleado": "socio"
+    },
+    {
+        "fecha": "2024-06-30 17:39:39",
+        "method": "POST",
+        "accion": "\/2024C1\/TP\/app\/usuarios\/cobrar_mesa",
+        "id_usuario": 1,
+        "usuario": "barriabal",
+        "nombre": "Joaquin",
+        "rol_empleado": "mozo"
+    }
+]

@@ -21,6 +21,7 @@ require_once './controllers/ProductoController.php';
 require_once './controllers/MesaController.php';
 require_once './controllers/PedidoController.php';
 require_once './controllers/ItemsPedidoController.php';
+require_once './controllers/EstadisticasController.php';
 
 require_once './middlewares/UserParamsMW.php';
 require_once './middlewares/MozoMW.php';
@@ -32,6 +33,18 @@ require_once './middlewares/ModificacionEstadoMW.php';
 require_once './middlewares/AuthMW.php';
 require_once './middlewares/UserDBMW.php';
 require_once './middlewares/EmpleadoPedidosMW.php';
+require_once './middlewares/csvMW.php';
+
+
+require_once './middlewares/PedidoMW.php';
+require_once './middlewares/ItemsPedidoMW.php';
+require_once './middlewares/ClienteMW.php';
+require_once './middlewares/GeneralMW.php';
+require_once './middlewares/MesaMW.php';
+require_once './middlewares/EncuestaMW.php';
+require_once './middlewares/UsuarioMW.php';
+require_once './middlewares/ProductoMW.php';
+
 
 
 // Load ENV
@@ -46,63 +59,74 @@ $app->setBasePath('/2024C1/TP/app');
 // Add error middleware
 $app->addErrorMiddleware(true, true, true);
 
-// Add parse body
-$app->addBodyParsingMiddleware();
 
 // Routes
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
-  $group->get('/todos', \UsuarioController::class . ':TraerTodos')->add(new AuthMiddleware)->add(new SocioMiddleware);
-  $group->post('/login', \UsuarioController::class . ':DevolverDataLogueo')->add(new UserLoggerMiddleware)->add(new LoggerMiddleware);
-  $group->get('/buscar/{usuario}', \UsuarioController::class . ':TraerUno')->add(new AuthMiddleware)->add(new SocioMiddleware)->add(new UserDBMiddleware);
-    $group->get('/pendientes', \UsuarioController::class . ':ListarPendientes')->add(new AuthMiddleware)->add(new EmpleadoPedidosMiddleware);
-    $group->get('/en_preparacion', \UsuarioController::class . ':ListarEnPreparacion')->add(new AuthMiddleware);
-    $group->get('/listos_para_servir', \UsuarioController::class . ':ListarListosParaServirYActualizarMesa')->add(new AuthMiddleware)->add(new MozoMiddleware); 
-    $group->post('[/]', \UsuarioController::class . ':CargarUno')->add(new UserParamsMiddleware);
-    $group->post('/asignar_item', \UsuarioController::class . ':AsignarItemPedido')->add(new AuthMiddleware);
-    $group->post('/modificar_estado_pedido', \UsuarioController::class . ':ActualizarItemPedido')->add(new AuthMiddleware)->add(new EmpleadoMiddleware)->add(new ModificacionEstadoMiddleware);
-    $group->post('/modificar_estado_mesa', \UsuarioController::class . ':ActualizarMesa')->add(new AuthMiddleware)->add(new MozoMiddleware)->add(new ModificacionEstadoMiddleware);  
-    $group->put('/cobrar_mesa', \UsuarioController::class . 'ActualizarMontoTotalDePedido')->add(new AuthMiddleware)->add(new MozoMiddleware);
-    $group->post('/socio/cerrar_mesa', \UsuarioController::class . ':CerrarMesa')->add(new AuthMiddleware)->add(new SocioMiddleware)->add(new ModificacionEstadoMiddleware);  
+  $group->get('/todos', \UsuarioController::class . ':TraerTodos')->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+  $group->post('/login', \UsuarioController::class . ':DevolverDataLogueo')->add([new LoggerMiddleware(), "Login"])->add(new UserLoggerMiddleware);
+  $group->get('/buscar', \UsuarioController::class . ':TraerUno')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add(new UserDBMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->get('/pendientes', \UsuarioController::class . ':ListarPendientes')->add(new LoggerMiddleware)->add(new EmpleadoPedidosMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->get('/en_preparacion', \UsuarioController::class . ':ListarEnPreparacion')->add(new LoggerMiddleware)->add([new GeneralMiddleware, "ConsultaSinParametros"])->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
     
+    $group->post('[/]', \UsuarioController::class . ':CargarUno')->add(new LoggerMiddleware)->add(new UserParamsMiddleware)->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware); 
+    $group->post('/asignar_item', \UsuarioController::class . ':AsignarItemPedido')->add(new LoggerMiddleware)->add([new EmpleadoMiddleware(), "chequearAsignacionIP"])->add([new ItemPedidoMiddleware(), 'ValidarAsignarUno'])->add([new ItemPedidoMiddleware(), 'ParamsAsignarUno'])->add(new EmpleadoPedidosMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->post('/modificar_estado_pedido', \UsuarioController::class . ':ActualizarItemPedido')->add(new LoggerMiddleware)->add([new EmpleadoMiddleware(), "chequearAsignacionIP"])->add(new ModificacionEstadoMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->post('/modificar_estado_mesa', \UsuarioController::class . ':ActualizarMesa')->add(new AuthMiddleware)->add(new ModificacionEstadoMiddleware)->add(new LoggerMiddleware)->add(new MozoMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"]) ->add(new AuthMiddleware);  
+    $group->post('/cobrar_mesa', \UsuarioController::class . ':ActualizarMontoTotalDePedido')->add(new LoggerMiddleware)->add([new MesaMiddleware(), "ValidarCobrarMesa"])->add([new MesaMiddleware(), "ParamsIDMesa"])->add(new MozoMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->post('/socios/cerrar_mesa', \UsuarioController::class . ':CerrarMesa')->add(new LoggerMiddleware)->add([new MesaMiddleware(), "ValidarCerrarMesa"])->add([new MesaMiddleware(), "ParamsIDMesa"])->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);  
+    $group->get('/socios/mejor_comentario', \EstadisticasController::class . ':MostrarMejorComentario')->add(new LoggerMiddleware)->add([new EncuestaMiddleware(), 'MejorComentario'])->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);  
+    $group->get('/socios/peor_comentario', \EstadisticasController::class . ':MostrarMejorComentario')->add(new LoggerMiddleware)->add([new EncuestaMiddleware(), 'MejorComentario'])->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);  
+    $group->put('/modificar', \UsuarioController::class . ':ModificarUno')->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->delete('/borrar', \UsuarioController::class . ':BorrarUno')->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+
+    $group->post('/socios/cambiar_suspension', \UsuarioController::class . ':ManejarSuspension')->add(new UsuarioMiddleware)->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    
+    $group->get('/socios/PDF/mejor_comentario', \EstadisticasController::class . ':MostrarMejorComentarioYGenerarPDF')->add(new LoggerMiddleware)->add([new EncuestaMiddleware(), 'MejorComentario'])->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);  
   });
 
   $app->group('/clientes', function (RouteCollectorProxy $group) {
-    $group->get('/info', \ClienteController::class . ':ListarTiempoEstimado');
+    $group->get('/info', \ClienteController::class . ':ListarTiempoEstimado')->add([new ClienteMiddleware(), "ValidarConsulta"])->add([new ClienteMiddleware(), "ParamsConsulta"]);
+    $group->post('/encuesta', \ClienteController::class . ':CompletarEncuesta')->add([new EncuestaMiddleware(), "ValidarEncuesta"])->add([new EncuestaMiddleware(), "ParamsEncuesta"])->add([new ClienteMiddleware(), "ValidarConsulta"])->add([new ClienteMiddleware(), "ParamsConsulta"]);
   });
 
   $app->group('/productos', function (RouteCollectorProxy $group) {
-    $group->get('[/]', \ProductoController::class . ':TraerTodos');
-    $group->get('/{producto}', \ProductoController::class . ':TraerUno');
-    $group->post('[/]', \ProductoController::class . ':CargarUno');
-    $group->post('/csv', \ProductoController::class . ':CargarCSV');
-    $group->get('/csv/descargar', \ProductoController::class . ':DescargarCSV');
+    $group->get('[/]', \ProductoController::class . ':TraerTodos')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
+    $group->get('/{producto}', \ProductoController::class . ':TraerUno')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
+    $group->post('[/]', \ProductoController::class . ':CargarUno')->add(new LoggerMiddleware)->add([new ProductoMiddleware(), 'ValidarCargarUno'])->add([new ProductoMiddleware(), 'ParamsCargarUno'])->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
+    $group->post('/csv', \ProductoController::class . ':CargarCSV')->add(new LoggerMiddleware)->add(new CSVMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
+    $group->get('/csv/descargar', \ProductoController::class . ':DescargarCSV')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->put('/modificar', \ProductoController::class . ':ModificarUno')->add(new LoggerMiddleware)->add([new ProductoMiddleware(), 'ValidarModificarUno'])->add([new ProductoMiddleware(), 'ParamsModificarUno'])->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
+    $group->delete('/borrar', \ProductoController::class . ':BorrarUno')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
   });
 
   $app->group('/mesas', function (RouteCollectorProxy $group) {
-    $group->get('[/]', \MesaController::class . ':TraerTodos');
-    $group->get('/{mesa}', \MesaController::class . ':TraerUno');
-    $group->post('[/]', \MesaController::class . ':CargarUno');
+    $group->get('/mostrar/todas', \MesaController::class . ':TraerTodos')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware); 
+    $group->get('/mostrar/{mesa}', \MesaController::class . ':TraerUno')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->get('/mas_usada', \MesaController::class . ':TraerMesaMasUsada')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->post('[/]', \MesaController::class . ':CargarUno')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add(new AuthMiddleware);
+    $group->put('/modificar', \MesaController::class . ':ModificarUno')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add(new AuthMiddleware);
+    $group->delete('/borrar', \MesaController::class . ':BorrarUno')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add(new AuthMiddleware);
+    $group->put('/listos_para_servir', \UsuarioController::class . ':ListarListosParaServirYActualizarMesa')->add(new LoggerMiddleware)->add(new MozoMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware); 
   });
 
   $app->group('/pedidos', function (RouteCollectorProxy $group) {
-    $group->get('/all', \PedidoController::class . ':TraerTodos');
-    $group->get('/id/{pedido}', \PedidoController::class . ':TraerUno');
-    $group->get('/en_preparacion', \PedidoController::class . ':ListarTotalEnPreparacion');
-    $group->get('/{pedido}/items', \PedidoController::class . ':TraerItemsPedido');
-    $group->post('[/]', \PedidoController::class . ':CargarUno');
+    $group->get('/all', \PedidoController::class . ':TraerTodos')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->get('/id/{pedido}', \PedidoController::class . ':TraerUno')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->get('/en_preparacion', \PedidoController::class . ':ListarTotalEnPreparacion')->add(new LoggerMiddleware)->add([new GeneralMiddleware, "ConsultaSinParametros"])->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);;
+    $group->get('/{pedido}/items', \PedidoController::class . ':TraerItemsPedido')->add(new LoggerMiddleware)->add(new AuthMiddleware);
+    $group->post('[/]', \PedidoController::class . ':CargarUno')->add(new LoggerMiddleware)->add([new PedidoMiddleware(), 'ValidarCargarUno'])->add([new PedidoMiddleware(), 'ParamsCargarUno'])->add(new MozoMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->put('/modificar', \PedidoController::class . ':ModificarUno')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add(new AuthMiddleware); 
+    $group->delete('/cancelar', \PedidoController::class . ':CancelarUno')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add(new AuthMiddleware); 
   });
 
   $app->group('/itemspedidos', function (RouteCollectorProxy $group) {
-    $group->get('[/]', \ItemsPedidoController::class . ':TraerTodos');
-    $group->get('/{pedido}', \ItemsPedidoController::class . ':TraerUno');
-    $group->post('[/]', \ItemsPedidoController::class . ':CargarUno')/*->add(new MozoMiddleware)->add(new AuthMiddleware)*/;
+    $group->get('[/]', \ItemsPedidoController::class . ':TraerTodos')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->get('/{pedido}', \ItemsPedidoController::class . ':TraerUno')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->post('[/]', \ItemsPedidoController::class . ':CargarUno')->add(new LoggerMiddleware)->add([new ItemPedidoMiddleware(), 'ValidarCargarUno'])->add([new ItemPedidoMiddleware(), 'ParamsCargarUno'])->add(new MozoMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->put('/modificar', \ItemsPedidoController::class . ':ModificarUno')->add(new LoggerMiddleware)->add([new ItemPedidoMiddleware(), 'ValidarModificarUno'])->add([new ItemPedidoMiddleware(), 'ParamsModificarUno'])->add(new SocioMiddleware)->add(new AuthMiddleware); 
+    $group->delete('/borrar', \ItemsPedidoController::class . ':BorrarUno')->add(new LoggerMiddleware)->add([new ItemPedidoMiddleware(), 'ValidarBorrarUno'])->add([new ItemPedidoMiddleware(), 'ParamsBorrarUno'])->add(new SocioMiddleware)->add(new AuthMiddleware); 
   });
 
-$app->get('[/]', function (Request $request, Response $response) {    
-    $payload = json_encode(array("mensaje" => "Slim Framework 4 PHP"));
-    
-    $response->getBody()->write($payload);
-    return $response->withHeader('Content-Type', 'application/json');
-});
+
 
 $app->run();

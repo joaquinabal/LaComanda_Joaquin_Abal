@@ -5,6 +5,8 @@ class Mesa {
     public $codigo;
     public $estado;
 
+    public $fecha_baja;
+
     public function crearMesa()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
@@ -19,10 +21,10 @@ class Mesa {
     public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, estado FROM mesas");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, estado FROM mesas WHERE fecha_baja IS NULL");
         $consulta->execute();
 
-        return $consulta->fetchAll(PDO::FETCH_CLASS, 'Mesa');
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public static function obtenerMesa($id)
@@ -35,27 +37,44 @@ class Mesa {
         return $consulta->fetchObject('Mesa');
     }
 
-    /*public function modificarProducto($id)
+    public static function obtenerMesaSegunCodigo($codigo)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, estado FROM mesas WHERE codigo = :codigo");
+        $consulta->bindValue(':codigo', $codigo, PDO::PARAM_INT);
+        $consulta->execute();
+
+        return $consulta->fetchObject('Mesa');
+    }
+
+    public static function obtenerMesaMasUsada()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id_mesa as ID, COUNT(*) AS total_pedidos FROM pedidos GROUP BY id_mesa ORDER BY total_pedidos DESC LIMIT 1");
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+
+    static public function modificarMesa($id, $codigo)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDato->prepararConsulta("UPDATE productos SET tipo = :tipo, nombre = :nombre, precio = :precio, sector = :sector WHERE id = :id");
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE mesas SET codigo = :codigo WHERE id = :id");
         $consulta->bindValue(':id', $id);
-        $consulta->bindValue(':tipo', $this->getTipo());
-        $consulta->bindValue(':nombre', $this->getNombre(), PDO::PARAM_STR);
-        $consulta->bindValue(':precio', $this->getPrecio(), PDO::PARAM_STR);
-        $consulta->bindValue(':sector', $this->getSector(), PDO::PARAM_STR);
+        $consulta->bindValue(':codigo', $codigo);
+
         $consulta->execute();
     }
 
-    public static function borrarProducto($id)
+    public static function borrarMesa($id)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET fechaBaja = :fechaBaja WHERE id = :id");
-        $fecha = new DateTime(date("d-m-Y"));
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE mesas SET fecha_baja = :fechaBaja WHERE id = :id");
+        $fecha = new DateTime(date("d-m-Y H:i:s"));
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->bindValue(':fechaBaja', date_format($fecha, 'Y-m-d H:i:s'));
         $consulta->execute();
-    }*/
+    }
 
     function generarCodigo($longitud = 5) {
         $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';

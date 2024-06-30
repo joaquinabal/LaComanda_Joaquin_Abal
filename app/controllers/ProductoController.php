@@ -3,6 +3,7 @@ require_once './models/Producto.php';
 require_once './interfaces/IApiUsable.php';
 require_once './utils/Archivos.php';
 
+date_default_timezone_set('America/Argentina/Buenos_Aires');
 
 class ProductoController extends Producto
 {
@@ -35,14 +36,14 @@ class ProductoController extends Producto
   {
     $archivo = $_FILES['datos_productos']['tmp_name'];
 
-    // Abre el archivo en modo lectura
+
     if (($handle = fopen($archivo, 'r')) !== FALSE) {
-      // Obtiene la primera fila como cabecera
+
       $cabecera = fgetcsv($handle, 10000, ',');
 
-      // Itera sobre las filas restantes
+
       while (($data = fgetcsv($handle, 10000, ',')) !== FALSE) {
-        // Combina la cabecera con los datos para crear un arreglo asociativo
+
         $fila = array_combine($cabecera, $data);
         $prod = new Producto();
         $prod->setNombre($fila['nombre']);
@@ -66,7 +67,7 @@ class ProductoController extends Producto
   }
 
   public function DescargarCSV($request, $response, $args){
-    $datos = Producto::obtenerTodos();
+    $datos = Producto::obtenerTodosSinID();
     Archivos::descargarCSV($datos);
     $payload = json_encode(array("mensaje" => "Descarga exitosa."));
       $response->getBody()->write($payload);
@@ -98,10 +99,25 @@ class ProductoController extends Producto
 
   public function ModificarUno($request, $response, $args)
   {
-    $parametros = $request->getParsedBody();
+    $inputData = file_get_contents('php://input');
+    $parametros = json_decode($inputData, true);
+
 
     $id = $parametros['id'];
-    Producto::modificarProducto($id);
+
+    $nombre = $parametros['nombre'];
+    $tipo = $parametros['tipo'];
+    $precio = $parametros['precio'];
+    $tiempo = $parametros['tiempo'];
+
+
+    $prod = new Producto();
+    $prod->setNombre($nombre);
+    $prod->setTipo($tipo);
+    $prod->setPrecio($precio);
+    $prod->setTiempo($tiempo);
+
+    $prod->modificarProducto($id);
 
     $payload = json_encode(array("mensaje" => "Producto modificado con exito"));
 
@@ -112,7 +128,8 @@ class ProductoController extends Producto
 
   public function BorrarUno($request, $response, $args)
   {
-    $parametros = $request->getParsedBody();
+    $inputData = file_get_contents('php://input');
+    $parametros = json_decode($inputData, true);
 
     $id = $parametros['id'];
     Producto::borrarProducto($id);

@@ -5,12 +5,14 @@ class Empleado extends Usuario
     public $nombre;
     public $fecha_ingreso;
     public $rol_empleado;
+    public $fecha_baja;
+    public $suspendido;
 
 
     public function crearEmpleado($rol_empleado)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (username, password, nombre, fecha_ingreso, rol_empleado) VALUES (:username, :password, :nombre, :fecha_ingreso, :rol_empleado)");
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (usuario, contraseña, nombre, fecha_ingreso, rol_empleado) VALUES (:username, :password, :nombre, :fecha_ingreso, :rol_empleado)");
         $claveHash = password_hash($this->getContraseña(), PASSWORD_DEFAULT);
         $consulta->bindValue(':username', $this->getUsuario(), PDO::PARAM_STR);
         $consulta->bindValue(':password', $claveHash);

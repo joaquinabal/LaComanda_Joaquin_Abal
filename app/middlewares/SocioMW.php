@@ -13,11 +13,9 @@ class SocioMiddleware
 
     public function __invoke(Request $request, RequestHandler $handler)
     {
+        $data = AutentificadorJWT::DevolverDataSegunHeader($request);
 
-        echo "Socio MW \n";
-
-        $params = $request->getParsedBody();
-        if (Usuario::obtenerUsuario($params["usuario"])->rol_empleado == "socio") {
+        if ($data->rol_empleado == "socio") {
             $response = $handler->handle($request);
         } else {
             $response = new Response();
@@ -25,6 +23,8 @@ class SocioMiddleware
         }
         return $response;
     }
+
+
 
     function chequearKeyValues($key, ...$values)
     {

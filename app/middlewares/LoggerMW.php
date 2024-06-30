@@ -4,43 +4,72 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Psr7\Response;
 
+
+require_once './utils/AutentificadorJWT.php';
+require_once './utils/Logger.php';
 class LoggerMiddleware
 {
+    private $logger;
+
+    public function __construct()
+    {
+        $this->logger = new Logger();
+    }
 
     public function __invoke(Request $request, RequestHandler $handler): Response
     {   
-        // Fecha antes
-        $before = date('Y-m-d H:i:s');
+        $method = $request->getMethod();
         
-        // Continua al controller
+        $data = AutentificadorJWT::DevolverDataSegunHeader($request);
+        
+        $id = $data->id;
+        $usuario = $data->usuario;
+        $nombre = $data->nombre;
+        $rol_empleado = $data->rol_empleado;  
+
         $response = $handler->handle($request);
-        $existingContent = json_decode($response->getBody());
-    
-        // Despues
-        $response = new Response();
-        $existingContent->fechaAntes = $before;
-        $existingContent->fechaDespues = date('Y-m-d H:i:s');
+
+        $path = $request->getUri()->getPath();
+
+
         
-        $payload = json_encode($existingContent);
-
-        $response->getBody()->write($payload);
-        return $response->withHeader('Content-Type', 'application/json');
-    }
-
-        public function VerificarRol(Request $request, RequestHandler $handler): Response
-    {   
-        $parametros = $request->getQueryParams();
-
-        $sector = $parametros['sector'];
-
-        if ($sector === 'admin') {
-            $response = $handler->handle($request);
-        } else {
-            $response = new Response();
-            $payload = json_encode(array('mensaje' => 'No sos Admin'));
-            $response->getBody()->write($payload);
-        }
+        $this->logger->log($path, $method, $id, $usuario, $nombre, $rol_empleado);
 
         return $response->withHeader('Content-Type', 'application/json');
     }
+
+    public function Login(Request $request, RequestHandler $handler): Response
+    {
+        $response = $handler->handle($request);
+
+        // Acceder al cuerpo de la respuesta
+        $body = $response->getBody();
+        $payload = (string) $body; // Convertir el cuerpo a string
+        $body->rewind(); // Rebobinar el flujo para futuras lecturas/escrituras
+
+        // Decodificar el JSON del payload
+        $data = json_decode($payload, true);
+
+        if (isset($data['jwt'])) {
+            // Procesar el token JWT
+            $jwt = $data['jwt'];
+            $decodedData = AutentificadorJWT::ObtenerData($jwt);
+
+            $id = $decodedData->id;
+            $usuario = $decodedData->usuario;
+            $nombre = $decodedData->nombre;
+            $rol_empleado = $decodedData->rol_empleado;
+
+            $method = $request->getMethod();
+            $path = $request->getUri()->getPath();
+
+    $this->logger->log($path, $method, $id, $usuario, $nombre, $rol_empleado);
+
+
+    }
+    return $response->withHeader('Content-Type', 'application/json');
+
 }
+}
+
+

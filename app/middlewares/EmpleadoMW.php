@@ -33,6 +33,25 @@ class EmpleadoMiddleware
         return $response;
     }
 
+    public function chequearAsignacionIP(Request $request, RequestHandler $handler)
+    {
+
+
+
+        $data = AutentificadorJWT::DevolverDataSegunHeader($request);
+
+        $params = $request->getParsedBody();
+        
+        if (ItemPedido::chequearTipoConRol($data->id, $params["id_item"])) {
+            
+            $response = $handler->handle($request);
+        } else {
+            $response = new Response();
+            $response->getBody()->write(json_encode(array("error" => "El usuario no posee rol correspondiente.")));
+        }
+        return $response;
+    }
+
     function chequearKeyValues($key, ...$values)
     {
         foreach ($values as $value) {

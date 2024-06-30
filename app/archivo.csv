@@ -1,6 +1,5 @@
-tipo,nombre,precio
-PlatoPrincipal,Fideos con Tuco,1000
-Cerveza,APA,2000
-TragoVino,DADA Malbec,2700
-TragoVino,Negroni,4000
-Postre,Frutillas con Crema,2500
+tipo,nombre,precio,tiempo
+PlatoPrincipal,Milanesa a Caballo,6000,30
+PlatoPrincipal,Hamburguesa de Garbanzo,4000,20
+Cerveza,Corona,4000,5
+TragoVino,Daikiri,4000,10

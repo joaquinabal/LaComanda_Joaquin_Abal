@@ -4,6 +4,10 @@ require_once './models/Empleado.php';
 require_once './interfaces/IApiUsable.php';
 require_once './models/ItemsPedido.php';
 require_once './utils/AutentificadorJWT.php';
+require_once './models/Encuesta.php';
+
+date_default_timezone_set('America/Argentina/Buenos_Aires');
+
 class UsuarioController extends Empleado implements IApiUsable
 {
     public function CargarUno($request, $response, $args)
@@ -35,7 +39,7 @@ class UsuarioController extends Empleado implements IApiUsable
       $usuario = $parametros['usuario'];
       $datos_usuario = Usuario::obtenerUsuario($usuario);
       $datos_usuario->guardarFechaIngreso();
-      $datos = array('id' => $datos_usuario->id, 'usuario' => $datos_usuario->username, 'nombre' => $datos_usuario->nombre, 'rol_empleado' => $datos_usuario->rol_empleado, 'fecha_ingreso' => $datos_usuario->fecha_ingreso, 'fecha_baja' => $datos_usuario->fecha_baja);
+      $datos = array('id' => $datos_usuario->id, 'usuario' => $datos_usuario->usuario, 'nombre' => $datos_usuario->nombre, 'rol_empleado' => $datos_usuario->rol_empleado, 'fecha_ingreso' => $datos_usuario->fecha_ingreso, 'fecha_baja' => $datos_usuario->fecha_baja, 'suspendido' => $datos_usuario->suspendido);
       $token = AutentificadorJWT::CrearToken($datos);
       $payload = json_encode(array('jwt' => $token));
 
@@ -50,6 +54,12 @@ class UsuarioController extends Empleado implements IApiUsable
       $id_item = $parametros['id_item'];
       ItemPedido::asignarEmpleado($id_item, $data->id);
       Usuario::modificarEstadoPedido($id_item);
+      $item = ItemPedido::obtenerItemPedido($id_item);
+      $tiempo_estimado_pedido = Pedido::obtenerPedido($item->getIdPedido())->tiempo_estimado;
+      $tiempo_producto = Producto::obtenerProductoSegunId($item->getIdProducto())->tiempo;
+      if($tiempo_producto > $tiempo_estimado_pedido){
+        ItemPedido::actualizarTiempoEstimadoPedido($item->getIdProducto());
+      }
       $payload = json_encode(array("mensaje" => "ItemPedido Asignado a Empleado"));
 
       $response->getBody()->write($payload);
@@ -60,21 +70,11 @@ class UsuarioController extends Empleado implements IApiUsable
     public function ActualizarItemPedido($request, $response, $args){
       $parametros = $request->getParsedBody();
 
-      $data = AutentificadorJWT::DevolverDataSegunHeader($request);
-
       $id_item = $parametros['id_item'];
-      $item = ItemPedido::obtenerItemPedidoSegunPedidoYEmpleado(ItemPedido::obtenerItemPedido($id_item)->id_pedido, $data->id);
-      var_dump($item);
+      $item = ItemPedido::obtenerItemPedido($id_item);
+
       $id_item = $item->id;
       Usuario::modificarEstadoPedido($id_item);
-      if(ItemPedido::obtenerItemPedido($id_item)->estado == "en preparación"){
-        $tiempo_estimado_pedido = Pedido::obtenerPedido($item->getIdPedido())->tiempo_estimado;
-          $tiempo_producto = Producto::obtenerProductoSegunId($item->getIdProducto())->tiempo;
-          if($tiempo_producto > $tiempo_estimado_pedido){
-            ItemPedido::actualizarTiempoEstimadoPedido($item->getIdProducto());
-          }
-      }
-
       $payload = json_encode(array("mensaje" => "Estado modificado con exito"));
 
       $response->getBody()->write($payload);
@@ -127,9 +127,12 @@ class UsuarioController extends Empleado implements IApiUsable
     }
 
     public function ListarListosParaServirYActualizarMesa($request, $response, $args) {
+
+      $data = AutentificadorJWT::DevolverDataSegunHeader($request);
+
       $listos_para_servir = Pedido::obtenerPedidosListosParaServir();
-      Usuario::modificarEstadoTodasMesasAListoParaServir();
-      //Faltaría actualizar itemspedidos a SERVIDO
+      Usuario::modificarEstadoTodasMesasAClientesComiendo();
+      Usuario::modificarEstadoTodosItemsPedidosAServidos($data->id);
       $payload = json_encode(array ("Eventos"=>(array("Pedidos Listos para Servir" =>$listos_para_servir, "mensaje" =>"Mesas Actualizadas"))));
       $response->getBody()->write($payload);
       return $response
@@ -140,31 +143,19 @@ class UsuarioController extends Empleado implements IApiUsable
       $params = $request->getParsedBody();
       $id_mesa = $params['id_mesa'];
       Pedido::sumarMontoTotal($id_mesa);
-      $payload = json_encode(array ("mensaje"=>"Monto total actualizado"));
+      Usuario::modificarEstadoMesa($id_mesa);
+      $payload = json_encode(array ("mensaje"=>"Monto total actualizado - Mesa Actualizada"));
       $response->getBody()->write($payload);
       return $response
         ->withHeader('Content-Type', 'application/json');
     }
 
-    /*public function ActualizarProducto($request, $response, $args){
-      echo "entramos \n";
-      $parametros = $request->getParsedBody();
-      $usuario = $parametros['usuario'];
-      $clave = $parametros['clave'];
-      $id_pedido = $parametros['id_pedido'];
-      Usuario::modificarEstadoPedido($id_pedido);
-
-      $payload = json_encode(array("mensaje" => "Estado modificado con exito"));
-
-      $response->getBody()->write($payload);
-      return $response
-        ->withHeader('Content-Type', 'application/json');
-    }*/
 
     public function TraerUno($request, $response, $args)
     {
         // Buscamos usuario por nombre
-        $usr = $args['id'];
+        $params = $request->getQueryParams();
+        $usr = $params['usuario'];
         $usuario = Usuario::obtenerUsuario($usr);
         $payload = json_encode($usuario);
 
@@ -185,10 +176,17 @@ class UsuarioController extends Empleado implements IApiUsable
     
     public function ModificarUno($request, $response, $args)
     {
-        $parametros = $request->getParsedBody();
+      $inputData = file_get_contents('php://input');
+      $parametros = json_decode($inputData, true);
 
-        $nombre = $parametros['nombre'];
-        Usuario::modificarUsuario($nombre); //chequear esto
+        $id = $parametros['id'];
+        $username = $parametros['usuario'];
+        $contraseña = $parametros['contraseña'];
+        $usuario = Usuario::obtenerUsuarioPorID($id);
+        $usuario->setUsuario($username);
+        $usuario->setContraseña($contraseña);
+      
+        $usuario->modificarUsuario();
 
         $payload = json_encode(array("mensaje" => "Usuario modificado con exito"));
 
@@ -199,12 +197,34 @@ class UsuarioController extends Empleado implements IApiUsable
 
     public function BorrarUno($request, $response, $args)
     {
-        $parametros = $request->getParsedBody();
+      $inputData = file_get_contents('php://input');
+      $parametros = json_decode($inputData, true);
 
-        $usuarioId = $parametros['usuarioId'];
+        $usuarioId = $parametros['id_usuario'];
         Usuario::borrarUsuario($usuarioId);
 
-        $payload = json_encode(array("mensaje" => "Usuario borrado con exito"));
+        $payload = json_encode(array("mensaje" => "Usuario dado de baja con éxito."));
+
+        $response->getBody()->write($payload);
+        return $response
+          ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function ManejarSuspension($request, $response, $args)
+    {
+        $parametros = $request->getParsedBody();
+
+        $usuarioId = $parametros['id_usuario'];
+        $usuario = Usuario::obtenerUsuarioPorID($usuarioId);
+
+        if($usuario->suspendido == 0){
+          Usuario::suspenderUsuario($usuarioId);
+          $payload = json_encode(array("mensaje" => "Usuario suspendido con éxito."));
+        } else {
+          Usuario::habilitarUsuario($usuarioId);
+          $payload = json_encode(array("mensaje" => "Usuario habilitado con éxito."));          
+        }
+
 
         $response->getBody()->write($payload);
         return $response

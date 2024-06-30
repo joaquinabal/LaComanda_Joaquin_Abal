@@ -12,11 +12,9 @@ class MozoMiddleware
     public function __invoke(Request $request, RequestHandler $handler)
     {
 
-        echo "Mozo MW \n";
 
-        
+
         $data = AutentificadorJWT::DevolverDataSegunHeader($request);
-
         if (in_array($data->rol_empleado, ["mozo", "socio"])) {
             $response = $handler->handle($request);
         } else {

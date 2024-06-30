@@ -2,6 +2,8 @@
 require_once './models/Mesa.php';
 require_once './interfaces/IApiUsable.php';
 
+date_default_timezone_set('America/Argentina/Buenos_Aires');
+
 class MesaController extends Mesa implements IApiUsable
 {
     public function CargarUno($request, $response, $args)
@@ -34,37 +36,51 @@ class MesaController extends Mesa implements IApiUsable
     public function TraerTodos($request, $response, $args)
     {
         $lista = Mesa::obtenerTodos();
-        $payload = json_encode(array("listaMesa" => $lista));
+        $payload = json_encode(array("Mesas" => $lista));
         $response->getBody()->write($payload);
         return $response
           ->withHeader('Content-Type', 'application/json');
     }
+
+    public function TraerMesaMasUsada($request, $response, $args)
+    {
+        $mesa = Mesa::obtenerMesaMasUsada();
+        $payload = json_encode(array("Mesa más Usada" => $mesa));
+        $response->getBody()->write($payload);
+        return $response
+          ->withHeader('Content-Type', 'application/json');
+    }
+
+    
     
     public function ModificarUno($request, $response, $args)
     {
-      /*  $parametros = $request->getParsedBody();
+      $inputData = file_get_contents('php://input');
+      $parametros = json_decode($inputData, true);
 
         $id = $parametros['id'];
-        Producto::modificarProducto($id);
+        $codigo = $parametros['codigo'];
+        Mesa::modificarMesa($id, $codigo);
 
-        $payload = json_encode(array("mensaje" => "Producto modificado con exito"));
+        $payload = json_encode(array("mensaje" => "Mesa modificada con exito"));
 
         $response->getBody()->write($payload);
         return $response
-          ->withHeader('Content-Type', 'application/json');*/
+          ->withHeader('Content-Type', 'application/json');
     }
 
     public function BorrarUno($request, $response, $args)
     {
-      /*  $parametros = $request->getParsedBody();
+      $inputData = file_get_contents('php://input');
+      $parametros = json_decode($inputData, true);
 
         $id = $parametros['id'];
-        Producto::borrarProducto($id);
+        Mesa::borrarMesa($id);
 
-        $payload = json_encode(array("mensaje" => "Producto borrado con exito"));
+        $payload = json_encode(array("mensaje" => "Mesa borrada con exito"));
 
         $response->getBody()->write($payload);
         return $response
-          ->withHeader('Content-Type', 'application/json');*/
+          ->withHeader('Content-Type', 'application/json');
     }
 }

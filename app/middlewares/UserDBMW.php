@@ -15,13 +15,17 @@ class UserDBMiddleware
     public function __invoke(Request $request, RequestHandler $handler)
     {
 
-        echo "User DB MW \n";
-
         $params = $request->getQueryParams();
         
         if (isset($params['usuario'])) {
             if (Usuario::obtenerUsuario($params['usuario'])){
-                $response = $handler->handle($request);
+                if(!Usuario::obtenerUsuario($params['usuario'])->fecha_baja){
+                    $response = $handler->handle($request);
+                } else {
+                    $response = new Response();
+                    $response->getBody()->write(json_encode(array("error" => "Usuario dado de baja.")));
+                    return $response;
+                }
             } else {
                 $response = new Response();
                 $response->getBody()->write(json_encode(array("error" => "No existe tal usuario.")));

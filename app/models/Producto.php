@@ -31,6 +31,15 @@ class Producto {
         return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public static function obtenerTodosSinID()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT tipo, nombre, precio, tiempo FROM productos");
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public static function obtenerProducto($nombreProducto)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
@@ -44,7 +53,7 @@ class Producto {
     public static function obtenerProductoSegunId($id)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, tipo, nombre, precio FROM productos WHERE id = :id");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, tipo, nombre, precio, tiempo FROM productos WHERE id = :id");
         $consulta->bindValue(':id', $id, PDO::PARAM_STR);
         $consulta->execute();
 
@@ -54,11 +63,12 @@ class Producto {
     public function modificarProducto($id)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDato->prepararConsulta("UPDATE productos SET tipo = :tipo, nombre = :nombre, precio = :precio WHERE id = :id");
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE productos SET tipo = :tipo, nombre = :nombre, precio = :precio, tiempo = :tiempo WHERE id = :id");
         $consulta->bindValue(':id', $id);
         $consulta->bindValue(':tipo', $this->getTipo());
         $consulta->bindValue(':nombre', $this->getNombre(), PDO::PARAM_STR);
         $consulta->bindValue(':precio', $this->getPrecio(), PDO::PARAM_STR);
+        $consulta->bindValue(':tiempo', $this->getTiempo(), PDO::PARAM_STR);
         $consulta->execute();
     }
 
@@ -79,12 +89,16 @@ class Producto {
     public static function borrarProducto($id)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET fechaBaja = :fechaBaja WHERE id = :id");
-        $fecha = new DateTime(date("d-m-Y"));
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE productos SET fecha_baja = :fechaBaja WHERE id = :id");
+        $fecha = new DateTime(date("d-m-Y H:i:s"));
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->bindValue(':fechaBaja', date_format($fecha, 'Y-m-d H:i:s'));
         $consulta->execute();
     }
+
+
+
+
 
     // Métodos Getters
     public function getId() {

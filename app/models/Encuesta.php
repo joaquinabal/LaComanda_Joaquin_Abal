@@ -29,6 +29,102 @@ class Encuesta {
         return $objAccesoDatos->obtenerUltimoId();
     }
 
+    static public function obtenerComentarioSegunMejorPuntajeMesa(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, m.id as Mesa, e.mesa_puntaje, e.comentario FROM encuestas e JOIN pedidos p on p.id = e.id_pedido JOIN mesas m on m.id = p.id_mesa  ORDER BY e.mesa_puntaje DESC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function obtenerComentarioSegunMejorPuntajeRestaurante(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, e.restaurante_puntaje, e.comentario FROM encuestas e ORDER BY e.restaurante_puntaje DESC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function obtenerComentarioSegunMejorPuntajeMozo(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, e.mozo_puntaje, u.nombre as nombre_mozo, e.comentario FROM encuestas e JOIN pedidos p on p.id = e.id_pedido JOIN usuarios u on u.id = p.id_mozo ORDER BY e.mozo_puntaje DESC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function obtenerComentarioSegunMejorPuntajeCocinero(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, e.cocinero_puntaje, e.comentario FROM encuestas e ORDER BY e.cocinero_puntaje DESC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function obtenerComentarioSegunMejorPuntajeBartender(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, e.bartender_puntaje, e.comentario FROM encuestas e ORDER BY e.bartender_puntaje DESC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function obtenerComentarioSegunMejorPuntajeCervecero(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, e.cervecero_puntaje, e.comentario FROM encuestas e ORDER BY e.cervecero_puntaje DESC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function obtenerComentarioSegunPeorPuntajeMesa(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, m.id as Mesa, e.mesa_puntaje, e.comentario FROM encuestas e JOIN pedidos p on p.id = e.id_pedido JOIN mesas m on m.id = p.id_mesa  ORDER BY e.mesa_puntaje ASC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function obtenerComentarioSegunPeorPuntajeRestaurante(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, e.restaurante_puntaje, e.comentario FROM encuestas e ORDER BY e.restaurante_puntaje ASC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function obtenerComentarioSegunPeorPuntajeMozo(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, e.mozo_puntaje, u.nombre as nombre_mozo, e.comentario FROM encuestas e JOIN pedidos p on p.id = e.id_pedido JOIN usuarios u on u.id = p.id_mozo ORDER BY e.mozo_puntaje ASC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function obtenerComentarioSegunPeorPuntajeCocinero(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, e.cocinero_puntaje, e.comentario FROM encuestas e ORDER BY e.cocinero_puntaje ASC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function obtenerComentarioSegunPeorPuntajeBartender(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, e.bartender_puntaje, e.comentario FROM encuestas e ORDER BY e.bartender_puntaje ASC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function obtenerComentarioSegunPeorPuntajeCervecero(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_pedido, e.cervecero_puntaje, e.comentario FROM encuestas e ORDER BY e.cervecero_puntaje ASC LIMIT 1");
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
      // Getter y Setter para id
      public function getId() {
         return $this->id;

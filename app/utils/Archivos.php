@@ -27,15 +27,8 @@ class Archivos
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=' . $nombreArchivo);
 
-        $rutaArchivo =  dirname(__DIR__) . '/csv/' . $nombreArchivo; // Cambia 'carpeta_deseada' por la ruta de tu carpeta
-
-        // Asegúrate de que la carpeta existe
-        if (!file_exists(dirname($rutaArchivo))) {
-            mkdir(dirname($rutaArchivo), 0777, true);
-        }
-
         // Abre un flujo de escritura para el archivo CSV
-        $salida = fopen($rutaArchivo, 'w');
+        $salida = fopen('php://output', 'w');
         // Escribe la cabecera del CSV (nombres de las columnas)
         $cabecera = array_keys($datos[0]);
         fputcsv($salida, $cabecera);

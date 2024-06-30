@@ -87,7 +87,7 @@ class Usuario
         }
     }
 
-    public static function modificarEstadoTodasMesasAListoParaServir()
+    public static function modificarEstadoTodasMesasAClientesComiendo()
     {
         $estados_itemspedido = ["pendiente", "en preparación", "listo para servir", "servido"];
         $estados_mesa = ["con cliente esperando pedido", "con cliente comiendo", "con cliente pagando", "cerrada"];   
@@ -95,6 +95,18 @@ class Usuario
         $consulta = $objAccesoDatos->prepararConsulta("UPDATE mesas m JOIN  (SELECT a.id_mesa FROM pedidos a JOIN itemspedido b ON b.id_pedido = a.id GROUP BY a.id_mesa HAVING COUNT(b.id) = SUM(CASE WHEN b.estado = :estado_itemspedido THEN 1 ELSE 0 END)) sub ON  m.id = sub.id_mesa SET m.estado = :estado_mesa");
         $consulta->bindValue(':estado_itemspedido',$estados_itemspedido[2], PDO::PARAM_STR);
         $consulta->bindValue(':estado_mesa',$estados_mesa[1], PDO::PARAM_STR);
+        $consulta->execute();
+    }
+
+    public static function modificarEstadoTodosItemsPedidosAServidos($id_mozo)
+    {
+        $estados_itemspedido = ["pendiente", "en preparación", "listo para servir", "servido"];
+        $estados_mesa = ["con cliente esperando pedido", "con cliente comiendo", "con cliente pagando", "cerrada"];   
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE itemspedido ip JOIN pedidos p ON ip.id_pedido = p.id JOIN (SELECT a.id FROM pedidos a JOIN itemspedido b ON b.id_pedido = a.id WHERE a.id_mozo = :id_mozo GROUP BY a.id HAVING COUNT(b.id) = SUM(CASE WHEN b.estado = :estado_itemspedido THEN 1 ELSE 0 END)) sub ON ip.id_pedido = sub.id SET ip.estado = :estado_itemspedido_2");
+        $consulta->bindValue(':estado_itemspedido',$estados_itemspedido[2], PDO::PARAM_STR);
+        $consulta->bindValue(':estado_itemspedido_2',$estados_itemspedido[3], PDO::PARAM_STR);
+        $consulta->bindValue(':id_mozo',$id_mozo, PDO::PARAM_INT);
         $consulta->execute();
     }
     
@@ -126,7 +138,7 @@ class Usuario
     public static function obtenerPendientesSegunTipoEmpleado($rol_empleado)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT c.id AS ID_Item, c.nombre AS Item, p.codigo AS Codigo_Pedido,  p.nombre_cliente AS Nombre_Cliente, 'pendiente' AS Estado FROM productos c JOIN pedidos p ON p.id = ( SELECT id_pedido FROM itemspedido ip_inner WHERE ip_inner.id_producto = c.id AND ip_inner.estado = 'pendiente' LIMIT 1 ) LEFT JOIN rol_empleado_tipo_producto r ON c.tipo = r.tipo WHERE EXISTS ( SELECT 1 FROM itemspedido ip WHERE ip.id_producto = c.id AND ip.estado = 'pendiente' AND ip.id_empleado IS NULL ) AND r.rol_empleado = :rol_empleado");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT ip.id AS ID_Item, c.nombre AS Item, p.codigo AS Codigo_Pedido, p.nombre_cliente AS Nombre_Cliente, 'pendiente' AS Estado FROM productos c JOIN itemspedido ip ON c.id = ip.id_producto JOIN pedidos p ON p.id = ( SELECT id_pedido FROM itemspedido ip_inner WHERE ip_inner.id_producto = c.id AND ip_inner.estado = 'pendiente' LIMIT 1 ) LEFT JOIN rol_empleado_tipo_producto r ON c.tipo = r.tipo WHERE EXISTS ( SELECT 1 FROM itemspedido ip WHERE ip.id_producto = c.id AND ip.estado = 'pendiente' AND ip.id_empleado IS NULL ) AND r.rol_empleado = :rol_empleado AND ip.estado = 'pendiente'  ");
         $consulta->bindValue(':rol_empleado', $rol_empleado);
         $consulta->execute();
 
@@ -144,20 +156,32 @@ class Usuario
         return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    
+
     public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, username, nombre, rol_empleado, fecha_ingreso, fecha_baja  FROM usuarios");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, usuario, nombre, rol_empleado, fecha_ingreso, fecha_baja  FROM usuarios");
         $consulta->execute();
 
-        return $consulta->fetchAll(PDO::FETCH_CLASS, 'Usuario');
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public static function obtenerUsuario($usuario)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, username, contraseña, nombre, rol_empleado, fecha_ingreso, fecha_baja  FROM usuarios WHERE username = :usuario");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, usuario, contraseña, nombre, rol_empleado, fecha_ingreso, fecha_baja, suspendido  FROM usuarios WHERE usuario = :usuario");
         $consulta->bindValue(':usuario', $usuario, PDO::PARAM_STR);
+        $consulta->execute();
+
+        return $consulta->fetchObject('Empleado');
+    }
+
+    public static function obtenerUsuarioPorID($id)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, usuario, contraseña, nombre, rol_empleado, fecha_ingreso, fecha_baja, suspendido  FROM usuarios WHERE id = :id");
+        $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
 
         return $consulta->fetchObject('Empleado');
@@ -166,9 +190,11 @@ class Usuario
     public function modificarUsuario()
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET username = :username, contraseña = :contraseña WHERE id = :id");
-        $consulta->bindValue(':username', $this->getUsuario(), PDO::PARAM_STR);
-        $consulta->bindValue(':contraseña', $this->getContraseña(), PDO::PARAM_STR);
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET usuario = :usuario, contraseña = :contrasena WHERE id = :id");
+        $claveHash = password_hash($this->getContraseña(), PASSWORD_DEFAULT);
+        $consulta->bindValue(':id', $this->getId(), PDO::PARAM_INT  );
+        $consulta->bindValue(':usuario', $this->getUsuario(), PDO::PARAM_STR);
+        $consulta->bindValue(':contrasena', $claveHash, PDO::PARAM_STR);
         $consulta->execute();
     }
 
@@ -176,9 +202,25 @@ class Usuario
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
         $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET fecha_baja = :fecha_baja WHERE id = :id");
-        $fecha = new DateTime(date("d-m-Y"));
+        $fecha = new DateTime(date("d-m-Y H:i:s"));
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->bindValue(':fecha_baja', date_format($fecha, 'Y-m-d H:i:s'));
+        $consulta->execute();
+    }
+
+    public static function suspenderUsuario($id)
+    {
+        $objAccesoDato = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET suspendido = 1 WHERE id = :id");
+        $consulta->bindValue(':id', $id, PDO::PARAM_INT);
+        $consulta->execute();
+    }
+
+    public static function habilitarUsuario($id)
+    {
+        $objAccesoDato = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET suspendido = 0 WHERE id = :id");
+        $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
     }
 
@@ -191,8 +233,6 @@ class Usuario
         $consulta->bindValue(':fecha_hora', date_format($fecha, 'Y-m-d H:i:s'));
         $consulta->execute();
     }
-
-
 
     // Getter for _id
     public function getId()

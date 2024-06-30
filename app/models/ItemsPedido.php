@@ -25,7 +25,7 @@ class ItemPedido{
     public static function obtenerTodos()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, id_pedido, id_producto, id_empleado FROM itemspedido");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, id_pedido, id_producto, id_empleado, estado FROM itemspedido");
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'ItemPedido');
@@ -71,6 +71,33 @@ class ItemPedido{
 
     }
     
+    public static function chequearTipoConRol($id_empleado, $id_item){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT rp.rol_empleado, rp.tipo FROM rol_empleado_tipo_producto rp JOIN usuarios u on u.rol_empleado = rp.rol_empleado JOIN productos p on rp.tipo = p.tipo JOIN itemspedido ip on ip.id_producto = p.id WHERE u.id = :id_empleado AND ip.id = :id_item");
+        $consulta->bindValue(':id_item', $id_item, PDO::PARAM_INT);
+        $consulta->bindValue(':id_empleado', $id_empleado, PDO::PARAM_INT);
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function modificarItemPedido($id, $id_producto)
+    {
+        $objAccesoDato = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE itemspedido SET id_producto = :id_producto WHERE id = :id");
+        $consulta->bindValue(':id', $id);
+        $consulta->bindValue(':id_producto', $id_producto);
+        $consulta->execute();
+    }
+
+    static public function borrarItemPedido($id)
+    {
+        $objAccesoDato = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDato->prepararConsulta("DELETE FROM itemspedido WHERE id = :id");
+        $consulta->bindValue(':id', $id);
+        $consulta->execute();
+    }
+
 
 
 public function getId() {

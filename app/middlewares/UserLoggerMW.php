@@ -8,11 +8,14 @@ class UserLoggerMiddleware {
 
     public function __invoke(Request $request, RequestHandler $handler) {
         
-        echo "User Logger MW \n";
-        
         $params = $request->getParsedBody();
-        if(isset($params["usuario"], $params["clave"],)){  
-            var_dump( Usuario::obtenerUsuario($params["usuario"])->contraseña);
+        if(isset($params["usuario"], $params["clave"])){ 
+            if(Usuario::obtenerUsuario($params["usuario"])->fecha_baja || (Usuario::obtenerUsuario($params["usuario"])->suspendido == 1)){
+                $response = new Response();
+                $response->getBody()->write(json_encode(array("error" => "Usuario dado de baja o suspendido.")));
+                return $response;
+            } else {    
+            } 
             if(password_verify($params["clave"], Usuario::obtenerUsuario($params["usuario"])->contraseña)){
                 $response = $handler->handle($request);
             } else {

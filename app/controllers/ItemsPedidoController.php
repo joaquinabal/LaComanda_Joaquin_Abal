@@ -2,6 +2,8 @@
 require_once './models/ItemsPedido.php';
 require_once './interfaces/IApiUsable.php';
 
+date_default_timezone_set('America/Argentina/Buenos_Aires');
+
 class ItemsPedidoController extends ItemPedido implements IApiUsable
 {
     public function CargarUno($request, $response, $args)
@@ -50,29 +52,32 @@ class ItemsPedidoController extends ItemPedido implements IApiUsable
     
     public function ModificarUno($request, $response, $args)
     {
-       /* $parametros = $request->getParsedBody();
+      $inputData = file_get_contents('php://input');
+      $parametros = json_decode($inputData, true);
 
         $id = $parametros['id'];
-        Pedido::modificarPedido($id);
+        $id_producto = $parametros['id_producto'];
+        ItemPedido::modificarItemPedido($id, $id_producto);
 
-        $payload = json_encode(array("mensaje" => "Pedido modificado con exito"));
+        $payload = json_encode(array("mensaje" => "ItemPedido modificado con exito"));
 
         $response->getBody()->write($payload);
         return $response
-          ->withHeader('Content-Type', 'application/json');*/
+          ->withHeader('Content-Type', 'application/json');
     }
 
     public function BorrarUno($request, $response, $args)
     {
-        /*$parametros = $request->getParsedBody();
+      $inputData = file_get_contents('php://input');
+      $parametros = json_decode($inputData, true);
 
         $id = $parametros['id'];
-        Pedido::borrarPedido($id);
+        ItemPedido::borrarItemPedido($id);
 
-        $payload = json_encode(array("mensaje" => "Pedido borrado con exito"));
+        $payload = json_encode(array("mensaje" => "ItemPedido borrado con exito"));
 
         $response->getBody()->write($payload);
         return $response
-          ->withHeader('Content-Type', 'application/json'); */
+          ->withHeader('Content-Type', 'application/json');
     }
 }
