@@ -91,12 +91,14 @@ $app->group('/usuarios', function (RouteCollectorProxy $group) {
 
   $app->group('/productos', function (RouteCollectorProxy $group) {
     $group->get('[/]', \ProductoController::class . ':TraerTodos')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
-    $group->get('/{producto}', \ProductoController::class . ':TraerUno')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
+    $group->get('/id/{producto}', \ProductoController::class . ':TraerUno')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
     $group->post('[/]', \ProductoController::class . ':CargarUno')->add(new LoggerMiddleware)->add([new ProductoMiddleware(), 'ValidarCargarUno'])->add([new ProductoMiddleware(), 'ParamsCargarUno'])->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
     $group->post('/csv', \ProductoController::class . ':CargarCSV')->add(new LoggerMiddleware)->add(new CSVMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
     $group->get('/csv/descargar', \ProductoController::class . ':DescargarCSV')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
     $group->put('/modificar', \ProductoController::class . ':ModificarUno')->add(new LoggerMiddleware)->add([new ProductoMiddleware(), 'ValidarModificarUno'])->add([new ProductoMiddleware(), 'ParamsModificarUno'])->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
     $group->delete('/borrar', \ProductoController::class . ':BorrarUno')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
+    $group->get('/mas_vendidos', \ProductoController::class . ':listarProductosMasVendidos')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new SocioMiddleware)->add(new AuthMiddleware);
+    
   });
 
   $app->group('/mesas', function (RouteCollectorProxy $group) {
@@ -107,11 +109,14 @@ $app->group('/usuarios', function (RouteCollectorProxy $group) {
     $group->put('/modificar', \MesaController::class . ':ModificarUno')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add(new AuthMiddleware);
     $group->delete('/borrar', \MesaController::class . ':BorrarUno')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add(new AuthMiddleware);
     $group->put('/listos_para_servir', \UsuarioController::class . ':ListarListosParaServirYActualizarMesa')->add(new LoggerMiddleware)->add(new MozoMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware); 
+    $group->get('/facturacion', \MesaController::class . ':TraerFacturacionPorFechas')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->get('/listado_por_factura', \MesaController::class . ':TraerMesasOrdAscPorFactura')->add(new LoggerMiddleware)->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
   });
 
   $app->group('/pedidos', function (RouteCollectorProxy $group) {
     $group->get('/all', \PedidoController::class . ':TraerTodos')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
     $group->get('/id/{pedido}', \PedidoController::class . ':TraerUno')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
+    $group->get('/fuera_de_hora', \PedidoController::class . ':ListarPedidosEntregadosFueraDeHora')->add(new LoggerMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
     $group->get('/en_preparacion', \PedidoController::class . ':ListarTotalEnPreparacion')->add(new LoggerMiddleware)->add([new GeneralMiddleware, "ConsultaSinParametros"])->add(new SocioMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);;
     $group->get('/{pedido}/items', \PedidoController::class . ':TraerItemsPedido')->add(new LoggerMiddleware)->add(new AuthMiddleware);
     $group->post('[/]', \PedidoController::class . ':CargarUno')->add(new LoggerMiddleware)->add([new PedidoMiddleware(), 'ValidarCargarUno'])->add([new PedidoMiddleware(), 'ParamsCargarUno'])->add(new MozoMiddleware)->add([new UsuarioMiddleware, "ChequearSuspensionODadoDeBaja"])->add(new AuthMiddleware);
@@ -127,6 +132,10 @@ $app->group('/usuarios', function (RouteCollectorProxy $group) {
     $group->delete('/borrar', \ItemsPedidoController::class . ':BorrarUno')->add(new LoggerMiddleware)->add([new ItemPedidoMiddleware(), 'ValidarBorrarUno'])->add([new ItemPedidoMiddleware(), 'ParamsBorrarUno'])->add(new SocioMiddleware)->add(new AuthMiddleware); 
   });
 
+  $app->group('/stats', function (RouteCollectorProxy $group) {
+    $group->get('/cant_op_sector', \EstadisticasController::class . ':MostrarCantOperacionesPorSector');
+    $group->get('/ingresos_por_usuario', \EstadisticasController::class . ':MostrarIngresosPorUsuario');
+  });
 
 
 $app->run();

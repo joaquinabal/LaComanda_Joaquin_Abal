@@ -108,9 +108,21 @@ class Usuario
         $consulta->bindValue(':estado_itemspedido_2',$estados_itemspedido[3], PDO::PARAM_STR);
         $consulta->bindValue(':id_mozo',$id_mozo, PDO::PARAM_INT);
         $consulta->execute();
+        return $consulta->rowCount();
     }
     
 
+    public static function modificarTiempoEntregaPedido($id_mozo)
+    {
+
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE pedidos p JOIN mesas m on m.id = p.id_mesa JOIN usuarios u on u.id = p.id_mozo SET p.hora_entregada = NOW() WHERE p.id_mozo = :id_mozo AND m.estado = :estado_mesa");
+        $consulta->bindValue(':estado_mesa',"con cliente comiendo", PDO::PARAM_STR);
+        $consulta->bindValue(':id_mozo',$id_mozo, PDO::PARAM_INT);
+        $consulta->execute();
+    }
+    
+    
     public static function cerrarEstadoMesa($id)
     {
         $estados = ["con cliente esperando pedido", "con cliente comiendo", "con cliente pagando", "cerrada"];
@@ -149,7 +161,7 @@ class Usuario
     public function obtenerEnPreparacionDeEmpleado()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT a.nombre as Empleado, a.rol_empleado as Rol, c.id as ID_Item, c.nombre as Item, b.estado as Estado FROM usuarios a JOIN itemspedido b on b.id_empleado = a.id JOIN productos c on c.id = b.id_producto WHERE b.estado = 'en preparación' AND a.id = :id");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT a.nombre as Empleado, a.rol_empleado as Rol, b.id as ID_Item, c.nombre as Item, b.estado as Estado FROM usuarios a JOIN itemspedido b on b.id_empleado = a.id JOIN productos c on c.id = b.id_producto WHERE b.estado = 'en preparación' AND a.id = :id");
         $consulta->bindValue(':id', $this->getId());
         $consulta->execute();
 

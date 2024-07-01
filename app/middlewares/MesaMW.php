@@ -120,4 +120,42 @@ class MesaMiddleware {
         }
         return $response->withHeader('Content-Type', 'application/json');
     }
+
+    public function ParamsFechaMinMax(Request $request, RequestHandler $handler): Response
+    {
+        $params = $request->getQueryParams();
+
+        if (isset($params["fecha_inicio"], $params["fecha_final"])) {
+            $response = $handler->handle($request);
+        } else {
+            $response = new Response();
+            $payload = json_encode(array('mensaje' => 'Parametros erroneos.'));
+            $response->getBody()->write($payload);
+        }
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+
+    public function ValoresFechaMinMax(Request $request, RequestHandler $handler): Response
+    {
+        $params = $request->getQueryParams();
+
+        $fecha_inicio = $params["fecha_inicio"];
+        $fecha_final = $params["fecha_final"];
+
+
+        if (strtotime($fecha_inicio) !== false || strtotime($fecha_final) !== false) {
+            $response = new Response();
+
+            $payload = json_encode(array('mensaje' => 'Fechas invalidas.'));
+            $response->getBody()->write($payload);
+        } else if ($fecha_final < $fecha_inicio) {
+            $response = new Response();
+            $payload = json_encode(array('mensaje' => 'Fecha de Inicio mayor a Fecha Final.'));
+            $response->getBody()->write($payload);
+        } else {
+            $response = $handler->handle($request);
+        }
+        return $response->withHeader('Content-Type', 'application/json');
+    }
 }

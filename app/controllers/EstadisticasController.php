@@ -144,6 +144,43 @@ class EstadisticasController
     }
 
     
+    public function MostrarCantOperacionesPorSector($request, $response, $args) {
+        $array = Archivos::cargarArchivoFiltrado("./log.json", "rol_empleado");
+        
+        $counts = [
+            "socio" => 0,
+            "mozo" => 0,
+            "cocinero" => 0,
+            "bartender" => 0,
+            "cervecero" => 0
+        ];
 
+        foreach ($array as $rol) {
+            if (array_key_exists($rol, $counts)) {
+                $counts[$rol]++;
+            }
+        }
+        $payload = json_encode(array("cant_operaciones" => $counts));
+        $response->getBody()->write($payload);
+      return $response
+        ->withHeader('Content-Type', 'application/json');
+    
+    }
 
+    public function MostrarIngresosPorUsuario($request, $response, $args) {
+        $array = Archivos::cargarArchivo("./log.json");
+
+        $empleados = [];
+
+        foreach ($array as $value) {
+            if ($value['accion'] == "/2024C1/TP/app/usuarios/login") {
+                $empleados[$value["usuario"]] = $value["fecha"];
+            }
+        }
+        $payload = json_encode(array("cant_operaciones" => $empleados));
+        $response->getBody()->write($payload);
+      return $response
+        ->withHeader('Content-Type', 'application/json');
+    
+    }
 }

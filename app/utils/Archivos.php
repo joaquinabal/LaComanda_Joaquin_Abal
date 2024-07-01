@@ -42,4 +42,31 @@ class Archivos
         fclose($salida);
         exit;
     }
+
+    public static function cargarArchivo($ruta){
+        if(file_exists($ruta)){
+            $archivo = fopen($ruta, 'r');
+            $contenido = fread($archivo,500000);
+            fclose($archivo);
+            $array_archivo = json_decode($contenido,true);
+            return $array_archivo;
+        } else {
+            return null;
+        }
+    }
+
+    public static function cargarArchivoFiltrado($ruta, $key_filtro){
+        if(file_exists($ruta)){
+            $archivo = fopen($ruta, 'r');
+            $contenido = fread($archivo,500000);
+            fclose($archivo);
+            $array_archivo = json_decode($contenido,true);
+            $array_archivo_filtrado = [];
+            foreach($array_archivo as $objeto){
+                    array_push($array_archivo_filtrado, $objeto[$key_filtro]);
+                
+            }
+            return $array_archivo_filtrado;
+        }
+    }
 }

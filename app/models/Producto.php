@@ -60,6 +60,14 @@ class Producto {
         return $consulta->fetchObject('Producto');
     }
 
+    public static function obtenerProductosMasVendidos(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT p.nombre, COUNT(ip.id_producto) as cantidad FROM productos p JOIN itemspedido ip ON ip.id_producto = p.id GROUP BY p.nombre ORDER BY cantidad DESC");
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function modificarProducto($id)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();

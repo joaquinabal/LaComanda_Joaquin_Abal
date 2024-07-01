@@ -51,8 +51,28 @@ class MesaController extends Mesa implements IApiUsable
           ->withHeader('Content-Type', 'application/json');
     }
 
-    
-    
+    public function TraerMesasOrdAscPorFactura($request, $response, $args)
+    {
+        $mesas = Mesa::obtenerMesasOrdAscPorFactura();
+        $payload = json_encode(array("Mesas ordenadas por factura" => $mesas));
+        $response->getBody()->write($payload);
+        return $response
+          ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function TraerFacturacionPorFechas($request, $response, $args)
+    {
+        $params = $request->getQueryParams();
+        $fecha_inicio = $params["fecha_inicio"];
+        $fecha_final = $params["fecha_final"];
+        $facturacion = Mesa::obtenerFacturacionPorFechas($fecha_inicio, $fecha_final);
+        $payload = json_encode(array("Facturacion de Mesas" => $facturacion));
+        $response->getBody()->write($payload);
+        return $response
+          ->withHeader('Content-Type', 'application/json');
+    }
+    //obtenerFacturacionPorFechas
+
     public function ModificarUno($request, $response, $args)
     {
       $inputData = file_get_contents('php://input');

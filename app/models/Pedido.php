@@ -13,7 +13,7 @@ class Pedido
     public $tiempo_estimado; 
     public $monto_total;
     public $fecha_hora;
-
+    public $hora_entregada;
     public $cancelado;
 
     public function crearPedido()
@@ -48,7 +48,7 @@ class Pedido
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
 
-        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+        return $consulta->fetch(PDO::FETCH_ASSOC);
     }
 
     public static function obtenerPedidoSegunCodigo($codigo){
@@ -105,11 +105,19 @@ class Pedido
 
     public static function obtenerPedidosSegunIDMesa($id_mesa){
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT p.id, p.codigo, p.id_mesa, p.id_mozo, p.nombre_cliente, p.foto, p.tiempo_estimado, p.fecha_hora, p.monto_total FROM pedidos p JOIN mesas m on m.id = p.id_mesa JOIN usuarios u on u.id = p.id_mozo WHERE id_mesa = :id_mesa");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT p.id, p.codigo, p.id_mesa, p.id_mozo, p.nombre_cliente, p.foto, p.tiempo_estimado, p.fecha_hora, p.monto_total, p.hora_entregada FROM pedidos p JOIN mesas m on m.id = p.id_mesa JOIN usuarios u on u.id = p.id_mozo WHERE id_mesa = :id_mesa");
         $consulta->bindValue(':id_mesa', $id_mesa, PDO::PARAM_STR);
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Pedido');
+    }
+
+    public static function obtenerPedidosEntregadosFueraDeHora(){
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, id_mesa, nombre_cliente, tiempo_estimado, TIMESTAMPDIFF(MINUTE, fecha_hora, hora_entregada) AS diferencia_minutos FROM pedidos WHERE TIMESTAMPDIFF(MINUTE, fecha_hora, hora_entregada) > tiempo_estimado");
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_ASSOC); 
     }
 
     static public function modificarPedido($id, $id_mesa, $nombre_cliente)

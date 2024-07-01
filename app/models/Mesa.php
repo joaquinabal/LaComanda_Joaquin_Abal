@@ -56,6 +56,26 @@ class Mesa {
     }
 
 
+    public static function obtenerMesasOrdAscPorFactura()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT m.id as Mesa, p.monto_total as Factura FROM pedidos p JOIN mesas m on m.id = p.id_mesa ORDER BY Factura ASC");
+        $consulta->execute();
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
+ 
+    public static function obtenerFacturacionPorFechas($fecha_inicio, $fecha_final)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT m.id AS Mesa, SUM(p.monto_total) AS facturacion FROM pedidos p JOIN mesas m ON m.id = p.id_mesa WHERE p.fecha_hora BETWEEN :fecha_inicio AND :fecha_final GROUP BY m.id
+");
+        $consulta->bindValue(':fecha_inicio', $fecha_inicio);
+        $consulta->bindValue(':fecha_final', $fecha_final);
+        $consulta->execute();
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
     static public function modificarMesa($id, $codigo)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();

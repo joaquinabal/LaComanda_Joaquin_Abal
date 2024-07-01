@@ -75,6 +75,15 @@ class PedidoController extends Pedido
           ->withHeader('Content-Type', 'application/json');
     }
 
+    public function ListarPedidosEntregadosFueraDeHora($request, $response){
+    $pedidos_fuera_de_hora = Pedido::obtenerPedidosEntregadosFueraDeHora();
+    $payload = json_encode(array("Pedidos" => $pedidos_fuera_de_hora));
+
+        $response->getBody()->write($payload);
+        return $response
+          ->withHeader('Content-Type', 'application/json');
+    }
+
     public function ModificarUno($request, $response, $args)
     {
       $inputData = file_get_contents('php://input');

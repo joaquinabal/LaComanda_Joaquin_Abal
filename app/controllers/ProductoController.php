@@ -75,6 +75,15 @@ class ProductoController extends Producto
         ->withHeader('Content-Type', 'application/json');
   }
 
+  public function listarProductosMasVendidos($request, $response, $args){
+  $lista = Producto::obtenerProductosMasVendidos();
+  $payload = json_encode(array("Productos" => $lista));
+  $response->getBody()->write($payload);
+  return $response
+    ->withHeader('Content-Type', 'application/json');
+
+  }
+
   public function TraerUno($request, $response, $args)
   {
     // Buscamos producto por nombre

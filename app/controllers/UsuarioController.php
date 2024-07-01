@@ -55,7 +55,7 @@ class UsuarioController extends Empleado implements IApiUsable
       ItemPedido::asignarEmpleado($id_item, $data->id);
       Usuario::modificarEstadoPedido($id_item);
       $item = ItemPedido::obtenerItemPedido($id_item);
-      $tiempo_estimado_pedido = Pedido::obtenerPedido($item->getIdPedido())->tiempo_estimado;
+      $tiempo_estimado_pedido = Pedido::obtenerPedido($item->getIdPedido())['tiempo_estimado'];
       $tiempo_producto = Producto::obtenerProductoSegunId($item->getIdProducto())->tiempo;
       if($tiempo_producto > $tiempo_estimado_pedido){
         ItemPedido::actualizarTiempoEstimadoPedido($item->getIdProducto());
@@ -132,7 +132,10 @@ class UsuarioController extends Empleado implements IApiUsable
 
       $listos_para_servir = Pedido::obtenerPedidosListosParaServir();
       Usuario::modificarEstadoTodasMesasAClientesComiendo();
-      Usuario::modificarEstadoTodosItemsPedidosAServidos($data->id);
+      $cant_pedidos_modificados =  Usuario::modificarEstadoTodosItemsPedidosAServidos($data->id);
+      if($cant_pedidos_modificados > 0){
+        Usuario::modificarTiempoEntregaPedido($data->id);
+      }
       $payload = json_encode(array ("Eventos"=>(array("Pedidos Listos para Servir" =>$listos_para_servir, "mensaje" =>"Mesas Actualizadas"))));
       $response->getBody()->write($payload);
       return $response
