@@ -44,7 +44,7 @@ class Pedido
     public static function obtenerPedido($id)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, id_mesa, id_mozo, nombre_cliente, foto, monto_total, tiempo_estimado, fecha_hora FROM pedidos WHERE id = :id");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, id_mesa, id_mozo, nombre_cliente, foto, monto_total, tiempo_estimado, fecha_hora, hora_entregada FROM pedidos WHERE id = :id");
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
 
@@ -53,7 +53,7 @@ class Pedido
 
     public static function obtenerPedidoSegunCodigo($codigo){
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, id_mesa, id_mozo, nombre_cliente, foto, monto_total, tiempo_estimado, fecha_hora FROM pedidos WHERE codigo = :codigo");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, codigo, id_mesa, id_mozo, nombre_cliente, foto, monto_total, tiempo_estimado, fecha_hora, hora_entregada FROM pedidos WHERE codigo = :codigo");
         $consulta->bindValue(':codigo', $codigo, PDO::PARAM_STR);
         $consulta->execute();
 
@@ -63,11 +63,11 @@ class Pedido
     public static function obtenerItemsPedidoSegunPedido($id)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT c.nombre FROM pedidos a LEFT JOIN itemspedido b on b.id_pedido = a.id LEFT JOIN productos c on c.id = b.id_producto WHERE a.id = :id");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT b.id as id, a.id as id_pedido, c.nombre, c.tipo, c.precio FROM pedidos a LEFT JOIN itemspedido b on b.id_pedido = a.id LEFT JOIN productos c on c.id = b.id_producto WHERE a.id = :id");
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
 
-        return $consulta->fetchAll(PDO::FETCH_CLASS, 'Pedido');
+        return $consulta->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public static function obtenerPedidosEnPreparacion(){
